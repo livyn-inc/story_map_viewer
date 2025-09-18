@@ -1,0 +1,15 @@
+{
+  "name": "story-map-viewer",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "lint:yaml": "node scripts/validate-story-map.js",
+    "lint:examples": "node scripts/validate-story-map.js examples"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}
+
+

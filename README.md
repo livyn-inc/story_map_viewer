@@ -29,6 +29,20 @@ YAMLのユーザーストーリーマップをブラウザで可視化・編集�
 4. 右上の「編集」ボタンでインライン編集を開始/終了
 5. 右上の各ボタンから PNG / PDF / Markdown / YAML を保存
 
+### YAML Lint（スキーマ検証）
+ローカルで Node.js が利用可能であれば、同梱のCLIでYAMLのバリデーションを実行できます。
+
+```bash
+cd story_map_viewer
+npm i
+# 単一/複数パスを指定（ファイル/ディレクトリ）
+npm run lint:yaml -- examples/sample.yaml
+# 例: examples 配下をまとめて検証
+npm run lint:examples
+```
+
+エラーは `[path] message` 形式で表示され、終了コード1を返します。
+
 ### インライン編集
 - Want/So that はそれぞれ独立入力。保存時に `I want …, So that …` 形式に再構成されます。
 - ペルソナはプルダウン選択。変更するとYAMLの所属が移動します。
