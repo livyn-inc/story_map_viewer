@@ -109,6 +109,7 @@ examples/
   └─ sample.yaml               # 初期サンプル
 modules/                        # 表示・編集・検証に関するJSモジュール
 styles/                         # スタイル（レイアウト/ファイル一覧/フォルダ同期）
+commands/                      # Cursor用コマンド（ダウンロード同等の内容を同梱）
 deploy/                         # デプロイ関連（公開対象外/.gitignore）
 ```
 
@@ -117,3 +118,9 @@ MIT License © 2025
 
 ## 参考リンク
 - Live Demo: [StoryMapViewer (Cloud Run)](https://story-map-viewer-663564722264.asia-northeast1.run.app/)
+
+## Cursor Commands（ヘルプからダウンロードできる内容と同等）
+このリポジトリには、ヘルプUIからDLできるコマンドファイルと同等の内容を `commands/` に同梱しています。必要に応じて `.cursor/commands/` 配下へコピーしてお使いください。
+
+- `commands/30_story_map_from_code.md` … 既存コードからストーリーマップを逆算生成
+- `commands/31_story_map_interactive.md` … 対話でストーリーマップを生成
