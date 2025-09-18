@@ -1,0 +1,242 @@
+integrated_story_map:
+  meta:
+    created_date: "2025-09-18"
+    project: "ECサイト（サンプル）"
+    phase: "Discovery - ストーリーマップ"
+    description: "Amazon風ユースケースを想定したサンプル（秘匿情報なし）"
+    version: "v2"
+    ui_options:
+      hide_priority_2: false
+
+  version_definitions:
+    order: [MVP, Release1, Release2, Future]
+
+  story_map_structure:
+    activities:
+      - id: ACT-01
+        name: "商品探索"
+        description: "検索・カテゴリ閲覧・レコメンド"
+        users: ["購入者"]
+      - id: ACT-02
+        name: "購入・決済"
+        description: "カート・配送先・支払い・注文確定"
+        users: ["購入者"]
+      - id: ACT-03
+        name: "アカウント・レビュー"
+        description: "会員情報・注文履歴・レビュー投稿"
+        users: ["購入者"]
+      - id: ACT-04
+        name: "出品・在庫管理"
+        description: "商品登録・価格設定・在庫・出荷準備"
+        users: ["出品者"]
+      - id: ACT-05
+        name: "フルフィルメント・配送"
+        description: "倉庫引当・配送指示・配送状況更新"
+        users: ["出品者", "配送担当"]
+      - id: ACT-06
+        name: "サポート・信頼"
+        description: "カスタマーサポート・セキュリティ・返金/返品"
+        users: ["全ユーザー"]
+
+    backbones:
+      - id: BB-01
+        activity_id: ACT-01
+        name: "検索/カテゴリ/フィルター"
+        description: "キーワード検索、カテゴリ閲覧、価格・在庫などの絞り込み"
+        sequence: 1
+      - id: BB-02
+        activity_id: ACT-01
+        name: "商品詳細/レコメンド"
+        description: "商品詳細、類似/関連商品の提示"
+        sequence: 2
+      - id: BB-03
+        activity_id: ACT-02
+        name: "カート/チェックアウト"
+        description: "カート投入、配送先・支払い選択、確定"
+        sequence: 1
+      - id: BB-04
+        activity_id: ACT-02
+        name: "注文確認/メール通知"
+        description: "注文確認画面、確認メール送信"
+        sequence: 2
+      - id: BB-05
+        activity_id: ACT-03
+        name: "アカウント/注文履歴/レビュー"
+        description: "会員情報編集、注文履歴、レビュー投稿"
+        sequence: 1
+      - id: BB-06
+        activity_id: ACT-04
+        name: "商品登録/価格/在庫"
+        description: "SKU登録、価格設定、在庫数量の更新"
+        sequence: 1
+      - id: BB-07
+        activity_id: ACT-04
+        name: "出荷準備/ラベル印字"
+        description: "出荷ラベル、梱包、配送依頼の準備"
+        sequence: 2
+      - id: BB-08
+        activity_id: ACT-05
+        name: "倉庫引当/配送連携"
+        description: "在庫引当、配送会社API連携、追跡番号発行"
+        sequence: 1
+      - id: BB-09
+        activity_id: ACT-05
+        name: "配送状況更新/お届け通知"
+        description: "ステータス更新、到着予定/配達完了通知"
+        sequence: 2
+      - id: BB-10
+        activity_id: ACT-06
+        name: "カスタマーサポート"
+        description: "問い合わせ、返品/返金申請、ケース管理"
+        sequence: 1
+      - id: BB-11
+        activity_id: ACT-06
+        name: "セキュリティ/本人確認"
+        description: "不正検知、2段階認証、支払い保護"
+        sequence: 2
+      - id: BB-12
+        activity_id: ACT-06
+        name: "パフォーマンス/信頼性"
+        description: "主要画面の高速化、障害時の復旧プロセス"
+        sequence: 3
+
+  display_order:
+    backbones: [BB-01, BB-02, BB-03, BB-04, BB-05, BB-06, BB-07, BB-08, BB-09, BB-10, BB-11, BB-12]
+
+  personas_stories:
+    P001:
+      name: "購入者"
+      role: "商品を探して購入するユーザー"
+      description: "ECサイトの主要な利用者"
+      stories:
+        - id: ST-SRCH-001
+          story: "I want キーワードで商品検索, So that 欲しい商品に素早く辿り着ける"
+          backbone_id: BB-01
+          version: "MVP"
+          priority: 1
+          acceptance_criteria:
+            - "部分一致/カテゴリ内検索ができる"
+            - "在庫/価格/評価でフィルタ可能"
+        - id: ST-PRD-001
+          story: "I want 商品詳細を確認, So that スペック/レビューを比較できる"
+          backbone_id: BB-02
+          version: "MVP"
+          priority: 1
+          acceptance_criteria:
+            - "画像ギャラリー/仕様/レビュー表示"
+            - "類似商品のレコメンド表示"
+        - id: ST-CART-001
+          story: "I want カートに追加, So that 購入予定をまとめられる"
+          backbone_id: BB-03
+          version: "MVP"
+          priority: 1
+        - id: ST-CHK-001
+          story: "I want チェックアウト, So that 配送先/支払いを選んで注文確定できる"
+          backbone_id: BB-03
+          version: "MVP"
+          priority: 1
+          acceptance_criteria:
+            - "配送先/配送オプションが選択できる"
+            - "カード/代替決済を選択し、注文確定"
+        - id: ST-ORD-001
+          story: "I want 注文確認メールを受け取る, So that 注文内容を後で確認できる"
+          backbone_id: BB-04
+          version: "MVP"
+          priority: 2
+        - id: ST-ACC-001
+          story: "I want 注文履歴や配送状況を確認, So that 到着までの状況を把握できる"
+          backbone_id: BB-05
+          version: "Release1"
+          priority: 2
+        - id: ST-REV-001
+          story: "I want レビューを投稿, So that 他の購入者に参考情報を提供できる"
+          backbone_id: BB-05
+          version: "Release2"
+          priority: 3
+
+    P002:
+      name: "出品者"
+      role: "商品を出品し在庫・配送を管理するユーザー"
+      description: "マーケットプレイス型ECの供給側"
+      stories:
+        - id: ST-LIST-001
+          story: "I want 商品を登録, So that 購入者に販売できる"
+          backbone_id: BB-06
+          version: "MVP"
+          priority: 1
+          acceptance_criteria:
+            - "SKU/価格/画像/説明を入力し公開できる"
+        - id: ST-STK-001
+          story: "I want 在庫数を更新, So that 欠品や売越を防げる"
+          backbone_id: BB-06
+          version: "MVP"
+          priority: 2
+        - id: ST-SHIP-001
+          story: "I want 出荷ラベルを印字, So that 迅速に梱包・発送できる"
+          backbone_id: BB-07
+          version: "Release1"
+          priority: 2
+        - id: ST-FFM-001
+          story: "I want 倉庫に引当して配送指示, So that 注文を確実に届けられる"
+          backbone_id: BB-08
+          version: "Release1"
+          priority: 2
+
+    P003:
+      name: "配送担当"
+      role: "配送計画と配達状況の更新を行うユーザー"
+      description: "倉庫/配送会社の担当者"
+      stories:
+        - id: ST-TRK-001
+          story: "I want 追跡番号を登録, So that 購入者が配送状況を追跡できる"
+          backbone_id: BB-08
+          version: "MVP"
+          priority: 2
+        - id: ST-STAT-001
+          story: "I want 配送ステータスを更新, So that 適切な通知が行われる"
+          backbone_id: BB-09
+          version: "MVP"
+          priority: 2
+
+  story_mapping:
+    ST-SRCH-001: { backbone_id: BB-01, sequence: 1 }
+    ST-PRD-001:  { backbone_id: BB-02, sequence: 1 }
+    ST-CART-001: { backbone_id: BB-03, sequence: 1 }
+    ST-CHK-001:  { backbone_id: BB-03, sequence: 2 }
+    ST-ORD-001:  { backbone_id: BB-04, sequence: 1 }
+    ST-ACC-001:  { backbone_id: BB-05, sequence: 1 }
+    ST-REV-001:  { backbone_id: BB-05, sequence: 2 }
+    ST-LIST-001: { backbone_id: BB-06, sequence: 1 }
+    ST-STK-001:  { backbone_id: BB-06, sequence: 2 }
+    ST-SHIP-001: { backbone_id: BB-07, sequence: 1 }
+    ST-FFM-001:  { backbone_id: BB-08, sequence: 1 }
+    ST-TRK-001:  { backbone_id: BB-08, sequence: 2 }
+    ST-STAT-001: { backbone_id: BB-09, sequence: 1 }
+
+  cross_persona_stories:
+    - id: CST-PERF-001
+      story: "I want 主要画面の高速化, So that 混雑時も快適に利用できる"
+      backbone_id: BB-12
+      version: "MVP"
+      priority: 3
+      acceptance_criteria:
+        - "検索/商品詳細/カートのLCPが目標値以内"
+    - id: CST-SAFE-001
+      story: "I want 不正検知と2段階認証, So that アカウント/決済を安全に保護できる"
+      backbone_id: BB-11
+      version: "Release1"
+      priority: 2
+    - id: CST-CS-001
+      story: "I want 返品/返金の簡易申請, So that トラブル時もスムーズに解決できる"
+      backbone_id: BB-10
+      version: "Release2"
+      priority: 3
+
+  mvp_release_plan:
+    mvp:
+      total_stories: 14
+      implementation_period: "1-2ヶ月"
+      release_criteria:
+        - "優先度1の完了（検索/詳細/カート/チェックアウト/出品登録）"
+        - "配送追跡・注文確認メールの有効化"
+        - "主要画面のパフォーマンス目標達成"

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryMapViewer - ユーザーストーリーマップ可視化ツール</title>
+    <link rel="stylesheet" href="story_map_style.css">
+    <link rel="stylesheet" href="styles/file-manager.css">
+    <link rel="stylesheet" href="styles/folder-watcher.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- サイドバー：ファイル管理 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>StoryMapViewer</h1>
+                <p class="app-version">v0.1.0</p>
+            </div>
+            
+            <!-- サイドバーメニューコンテナ -->
+            <div id="sidebarMenuContainer"></div>
+        </aside>
+        
+        <!-- メインコンテンツ：ストーリーマップ -->
+        <main class="main-content">
+            <div class="story-map">
+                <div class="map-header">
+                    <h2 id="mapTitle">ストーリーマップを選択してください</h2>
+                    <p id="mapDescription">左側のパネルからYAMLファイルを選択またはアップロード</p>
+                    
+                    <!-- エクスポートボタン -->
+                    <div class="map-actions" style="display: none;">
+                        <button id="toggleEdit" class="export-btn" title="編集モード切替">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            編集
+                        </button>
+                        <button id="exportPNG" class="export-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            PNG
+                        </button>
+                        <button id="exportPDF" class="export-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            PDF
+                        </button>
+                        <button id="exportMarkdown" class="export-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Markdown
+                        </button>
+                        <button id="exportYAML" class="export-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 20h9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            YAML
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- ペルソナ固定レジェンドは非表示（自動色＆カード表示に一本化） -->
+                <div id="personaLegend" class="persona-legend" style="display: none;"></div>
+                
+                <div id="mapContent" class="map-content">
+                    <div class="welcome-state">
+                        <svg class="welcome-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke-width="2"/>
+                            <line x1="9" y1="6" x2="15" y2="6" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="9" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="9" y1="14" x2="12" y2="14" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <h3>StoryMapViewer へようこそ</h3>
+                        <p>YAMLファイルをドラッグ&ドロップまたは選択してアップロードしてください</p>
+                        <div class="features">
+                            <div class="feature">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M9 11l3 3L22 4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                厳密なYAMLバリデーション
+                            </div>
+                            <div class="feature">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
+                                    <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
+                                    <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
+                                    <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
+                                </svg>
+                                インタラクティブなグリッドレイアウト
+                            </div>
+                            <div class="feature">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 20h9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                リアルタイム編集
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 外部ライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- 既存モジュール -->
+    <script type="module">
+        // 既存モジュールのインポート
+        import ErrorNotifier from './modules/ErrorNotifier.js';
+        import YamlLoader from './modules/YamlLoader.js';
+        import SchemaValidator from './modules/SchemaValidator.js';
+        import DataComposer from './modules/DataComposer.js';
+        import GridLayoutEngine from './modules/GridLayoutEngine.js';
+        import StoryMapRenderer from './modules/StoryMapRenderer.js';
+        import SyncScrollController from './modules/SyncScrollController.js';
+        import PersonaTagColorMap from './modules/PersonaTagColorMap.js';
+        // 固定レジェンドは不要
+        
+        // 新規モジュールのインポート
+        import FileManager from './modules/FileManager.js';
+        import FileUploader from './modules/FileUploader.js';
+        import FileListView from './modules/FileListView.js';
+        import FolderWatcher from './modules/FolderWatcher.js';
+        import FolderWatcherUI from './modules/FolderWatcherUI.js';
+        import InlineEditor from './modules/InlineEditor.js';
+        import Exporter from './modules/Exporter.js';
+        import SidebarToggle from './modules/SidebarToggle.js';
+        import SidebarMenu from './modules/SidebarMenu.js';
+        import YamlEditor from './modules/YamlEditor.js';
+        import HelpView from './modules/HelpView.js';
+        
+        // グローバル変数
+        let currentFile = null;
+        const fileUploader = new FileUploader();
+        const fileListView = new FileListView();
+        const folderWatcherUI = new FolderWatcherUI();
+        const inlineEditor = new InlineEditor();
+        const sidebarMenu = new SidebarMenu();
+        const yamlEditor = new YamlEditor();
+        const helpView = new HelpView();
+        
+        // アプリケーションの初期化
+        async function initApp() {
+            try {
+                console.log('Initializing app...');
+                
+                // FileManagerの初期化
+                await FileManager.init();
+                console.log('FileManager initialized');
+                
+                // サイドバーメニューの初期化
+                const menuContainer = document.getElementById('sidebarMenuContainer');
+                console.log('Menu container:', menuContainer);
+                
+                if (!menuContainer) {
+                    console.error('sidebarMenuContainer not found!');
+                    return;
+                }
+                
+                sidebarMenu.init(menuContainer);
+                console.log('SidebarMenu initialized');
+            
+                // タブ変更イベントリスナー
+                window.addEventListener('sidebarTabChanged', (e) => {
+                    if (e.detail.tab === 'files') {
+                        fileListView.refresh();
+                    }
+                });
+                
+                // ファイルアップローダーの初期化（アップロードタブ内）
+                const dropZone = FileUploader.createDropZoneUI();
+                const uploadContainer = sidebarMenu.getUploadContainer();
+                if (uploadContainer) {
+                    uploadContainer.appendChild(dropZone);
+                }
+                
+                console.log('Initializing file uploader with dropZone:', dropZone);
+                fileUploader.init(dropZone, onFileUploaded, onUploadError);
+                
+                // ファイルリストビューの初期化（ファイルタブ内）
+                const listContainer = sidebarMenu.getFileListContainer();
+                fileListView.init(listContainer, onFileSelected, onFileDeleted, onFileEdit);
+                
+                // 初回起動時にサンプルYAMLを読み込む
+                const files = await FileManager.listFiles();
+                if (files.length === 0) {
+                    const sampleFiles = [
+                        './examples/sample.yaml'
+                    ];
+                    
+                    let firstFile = null;
+                    
+                    for (const samplePath of sampleFiles) {
+                        try {
+                            // サンプルYAMLをフェッチ
+                            const response = await fetch(samplePath);
+                            if (response.ok) {
+                                const yamlText = await response.text();
+                                const yamlData = window.jsyaml.load(yamlText);
+                                
+                                const fileName = samplePath.split('/').pop();
+                                
+                                // ファイルとして保存
+                                const sampleFile = {
+                                    id: 'sample-' + fileName.replace('.yaml', '') + '-' + Date.now(),
+                                    name: fileName,
+                                    content: yamlText,
+                                    parsedData: yamlData,
+                                    projectName: yamlData.integrated_story_map?.meta?.project || yamlData.integrated_story_map?.meta?.project_name || 'サンプルプロジェクト',
+                                    uploadedAt: new Date().toISOString(),
+                                    updatedAt: new Date().toISOString(),
+                                    size: new Blob([yamlText]).size
+                                };
+                                
+                                await FileManager.saveFile(sampleFile);
+                                
+                                // 最初のファイルを記録
+                                if (!firstFile) {
+                                    firstFile = sampleFile;
+                                }
+                            }
+                        } catch (error) {
+                            console.error(`サンプルファイル ${samplePath} の読み込みに失敗:`, error);
+                        }
+                    }
+                    
+                    // 最初のサンプルを表示
+                    if (firstFile) {
+                        await displayStoryMap(firstFile);
+                    }
+                    
+                    // ファイルリストを更新
+                    await fileListView.refresh();
+                } else {
+                    // 既にIndexedDBにファイルがある場合は最初の1件を表示
+                    await displayStoryMap(files[0]);
+                }
+                
+                // フォルダ監視UIの初期化（フォルダタブ内）
+                const folderWatcherContainer = sidebarMenu.getFolderSyncContainer();
+                folderWatcherUI.init(folderWatcherContainer, onFolderWatcherStatusChange);
+                
+                // ヘルプビューの初期化（ヘルプタブ内）
+                const helpContainer = sidebarMenu.getHelpContainer();
+                helpView.init(helpContainer);
+                
+                // エクスポートボタンのイベント設定
+                setupExportButtons();
+                
+                // 編集モードボタンの設定
+                setupEditButton();
+                
+            } catch (error) {
+                console.error('App initialization error:', error);
+                ErrorNotifier.showRuntimeError(`初期化エラー: ${error.message}`, error.stack);
+            }
+        }
+        
+        // ファイルアップロード成功時
+        async function onFileUploaded(file) {
+            console.log('File uploaded:', file);
+            await fileListView.refresh();
+            await displayStoryMap(file);
+        }
+        
+        // アップロードエラー時
+        function onUploadError(error) {
+            console.error('Upload error:', error);
+            ErrorNotifier.showRuntimeError(error);
+        }
+        
+        // ファイル選択時
+        async function onFileSelected(file) {
+            console.log('File selected:', file);
+            await displayStoryMap(file);
+        }
+        
+        // ファイル削除時
+        function onFileDeleted(fileId) {
+            console.log('File deleted:', fileId);
+            if (currentFile && currentFile.id === fileId) {
+                currentFile = null;
+                resetMapDisplay();
+            }
+        }
+        
+        // ファイル編集時
+        async function onFileEdit(file) {
+            console.log('File edit requested:', file);
+            
+            // YAMLエディタを開く
+            yamlEditor.open(file, async (updatedFile) => {
+                // ファイルを更新
+                await FileManager.updateFile(updatedFile.id, updatedFile);
+                
+                // リストを更新
+                await fileListView.refresh();
+                
+                // 現在表示中のファイルなら再表示
+                if (currentFile && currentFile.id === updatedFile.id) {
+                    await displayStoryMap(updatedFile);
+                }
+            });
+        }
+        
+        // ストーリーマップの表示
+        async function displayStoryMap(file) {
+            currentFile = file;
+            
+            // ヘッダー更新
+            document.getElementById('mapTitle').textContent = file.projectName || file.name;
+            document.getElementById('mapDescription').textContent = `最終更新: ${new Date(file.updatedAt).toLocaleString('ja-JP')}`;
+            document.querySelector('.map-actions').style.display = 'flex';
+            
+            try {
+                // バリデーション
+                const errors = SchemaValidator.validate(file.parsedData);
+                if (errors.length > 0) {
+                    ErrorNotifier.showErrors(errors);
+                    return;
+                }
+                
+                // データ構成
+                // YAML全体を渡してVersion定義を参照できるようにする
+                DataComposer._lastYaml = file.parsedData;
+                const gridData = DataComposer.compose(file.parsedData);
+                // 先にDOMを作ってから列数を適用する（順序依存のため下でも再適用）
+                GridLayoutEngine.applyGridColumns(gridData.columns.length);
+                
+                // Exporterにデータを設定
+                Exporter.setData(file.parsedData);
+                
+                // マップコンテンツの準備
+                const mapContent = document.getElementById('mapContent');
+                mapContent.innerHTML = `
+                    <div class="story-map-wrapper" style="width: max-content;">
+                        <div class="map-row">
+                            <div class="row-label">アクティビティ</div>
+                            <div class="row-content" id="activities"></div>
+                        </div>
+                        <div class="map-row">
+                            <div class="row-label">バックボーン</div>
+                            <div class="row-content" id="backbones"></div>
+                        </div>
+                        <div class="map-row">
+                            <div class="row-label">ユーザーストーリー</div>
+                            <div class="row-content" id="stories"></div>
+                        </div>
+                    </div>
+                `;
+                
+                // レンダリング
+                GridLayoutEngine.applyLabelCardStyles();
+                // DOM構築後に列数を再適用（CSS変数の反映順序問題に対処）
+                GridLayoutEngine.applyGridColumns(gridData.columns.length);
+                
+                const mounts = {
+                    activities: document.getElementById('activities'),
+                    backbones: document.getElementById('backbones'),
+                    stories: document.getElementById('stories')
+                };
+                
+                StoryMapRenderer.render(gridData, mounts);
+                
+                // レイアウト強制: ラッパー幅を実カラム数から算出して付与
+                const wrapperEl = document.querySelector('.story-map-wrapper');
+                if (wrapperEl) {
+                    const cols = Math.max(1, gridData.columns.length || 1);
+                    const cardWidth = 240; // px
+                    const gap = 10; // px
+                    const label = 200; // px (左ラベル)
+                    const marginFudge = 40; // 左右の余白
+                    const total = (cols * cardWidth) + ((cols - 1) * gap) + label + marginFudge;
+                    wrapperEl.style.minWidth = total + 'px';
+                }
+
+                // CSS変数に依存せず直接グリッド列を設定（確実に横幅を拡張）
+                const colsForGrid = Math.max(1, gridData.columns.length || 1);
+                ['activities', 'backbones', 'stories'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.gridTemplateColumns = `repeat(${colsForGrid}, 240px)`;
+                    }
+                });
+
+                // 実DOMの計測値に基づいて最終幅を確定（CSSや変数競合の影響を排除）
+                (function adjustHorizontalWidth() {
+                    const activities = document.getElementById('activities');
+                    const backbones = document.getElementById('backbones');
+                    const stories = document.getElementById('stories');
+                    const list = [activities, backbones, stories].filter(Boolean);
+                    if (list.length === 0) return;
+                    const maxContentWidth = Math.max(...list.map(el => el.scrollWidth || 0));
+                    const LABEL = 200; // 左ラベル
+                    const EXTRA = 50;  // 余白
+                    const required = maxContentWidth + LABEL + EXTRA;
+                    const wrapper = document.querySelector('.story-map-wrapper');
+                    if (wrapper) {
+                        wrapper.style.minWidth = required + 'px';
+                    }
+                    const map = document.getElementById('mapContent');
+                    if (map) {
+                        map.style.overflowX = 'auto';
+                        map.scrollLeft = 0;
+                    }
+                    console.log('[StoryMap] widths:', {
+                        activities: activities?.scrollWidth,
+                        backbones: backbones?.scrollWidth,
+                        stories: stories?.scrollWidth,
+                        wrapperMinWidth: required
+                    });
+                })();
+
+                // ペルソナ凡例
+                // 固定レジェンドは使用しない（カードに自動色適用）
+                document.getElementById('personaLegend').style.display = 'none';
+                
+                // スクロール同期
+                const scrollContainers = [
+                    document.getElementById('activities'),
+                    document.getElementById('backbones'),
+                    document.getElementById('stories')
+                ].filter(el => el !== null);
+                
+                if (scrollContainers.length > 0) {
+                    SyncScrollController.bindSynchronizedScroll(scrollContainers);
+                }
+                
+            } catch (error) {
+                console.error('Display error:', error);
+                ErrorNotifier.showRuntimeError(error.message, error.stack);
+            }
+        }
+        
+        // マップ表示のリセット
+        function resetMapDisplay() {
+            document.getElementById('mapTitle').textContent = 'ストーリーマップを選択してください';
+            document.getElementById('mapDescription').textContent = '左側のパネルからYAMLファイルを選択またはアップロード';
+            document.querySelector('.map-actions').style.display = 'none';
+            document.getElementById('personaLegend').style.display = 'none';
+            
+            const mapContent = document.getElementById('mapContent');
+            mapContent.innerHTML = `
+                <div class="welcome-state">
+                    <svg class="welcome-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke-width="2"/>
+                        <line x1="9" y1="6" x2="15" y2="6" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="9" y1="10" x2="15" y2="10" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="9" y1="14" x2="12" y2="14" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <h3>StoryMapViewer へようこそ</h3>
+                    <p>YAMLファイルをドラッグ&ドロップまたは選択してアップロードしてください</p>
+                    <div class="features">
+                        <div class="feature">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 11l3 3L22 4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            厳密なYAMLバリデーション
+                        </div>
+                        <div class="feature">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
+                                <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
+                                <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
+                                <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
+                            </svg>
+                            インタラクティブなグリッドレイアウト
+                        </div>
+                        <div class="feature">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 20h9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            リアルタイム編集
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // フォルダ監視ステータス変更時
+        function onFolderWatcherStatusChange(status) {
+            console.log('Folder watcher status:', status);
+            
+            // ファイルリストを更新
+            if (status.type === 'added' || status.type === 'updated' || status.type === 'deleted') {
+                fileListView.refresh();
+            }
+        }
+        
+        // エクスポートボタンの設定
+        function setupExportButtons() {
+            document.getElementById('exportPNG').addEventListener('click', async () => {
+                if (!currentFile) {
+                    alert('ファイルを選択してください');
+                    return;
+                }
+                
+                const mapContent = document.getElementById('mapContent');
+                const filename = `${currentFile.projectName || 'story-map'}_${new Date().toISOString().split('T')[0]}.png`;
+                
+                const result = await Exporter.exportAsPNG(mapContent, filename);
+                if (result.success) {
+                    console.log('PNG exported successfully');
+                } else {
+                    alert(`エクスポートエラー: ${result.error}`);
+                }
+            });
+            
+            document.getElementById('exportPDF').addEventListener('click', async () => {
+                if (!currentFile) {
+                    alert('ファイルを選択してください');
+                    return;
+                }
+                
+                const mapContent = document.getElementById('mapContent');
+                const filename = `${currentFile.projectName || 'story-map'}_${new Date().toISOString().split('T')[0]}.pdf`;
+                
+                const result = await Exporter.exportAsPDF(mapContent, filename);
+                if (result.success) {
+                    console.log('PDF exported successfully');
+                } else {
+                    alert(`エクスポートエラー: ${result.error}`);
+                }
+            });
+            
+            document.getElementById('exportMarkdown').addEventListener('click', async () => {
+                if (!currentFile) {
+                    alert('ファイルを選択してください');
+                    return;
+                }
+                
+                const filename = `${currentFile.projectName || 'story-map'}_${new Date().toISOString().split('T')[0]}.md`;
+                
+                const result = await Exporter.exportAsMarkdown(filename);
+                if (result.success) {
+                    console.log('Markdown exported successfully');
+                } else {
+                    alert(`エクスポートエラー: ${result.error}`);
+                }
+            });
+
+            // YAML（再インポート用）
+            document.getElementById('exportYAML').addEventListener('click', async () => {
+                if (!currentFile) {
+                    alert('ファイルを選択してください');
+                    return;
+                }
+                const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                const blob = new Blob([yamlText], { type: 'text/yaml;charset=utf-8' });
+                const filename = `${currentFile.projectName || currentFile.name || 'story-map'}.yaml`;
+                window.saveAs(blob, filename);
+            });
+        }
+        
+        // 編集モードボタンの設定
+        function setupEditButton() {
+            const toggleEditBtn = document.getElementById('toggleEdit');
+            if (toggleEditBtn) {
+                toggleEditBtn.addEventListener('click', async () => {
+                    const isEnabled = inlineEditor.toggleEditMode();
+                    
+                    if (isEnabled) {
+                        toggleEditBtn.classList.add('active');
+                        toggleEditBtn.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            編集完了
+                        `;
+                        toggleEditBtn.classList.add('cta-edit');
+                        
+                        // 編集時のコールバック設定
+                        inlineEditor.changeCallback = handleStoryEdit;
+                    } else {
+                        toggleEditBtn.classList.remove('active');
+                        toggleEditBtn.classList.remove('cta-edit');
+                        toggleEditBtn.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            編集
+                        `;
+                        // 編集終了後は最新データで再描画
+                        if (currentFile) {
+                            // DBから最新を取得する代わりに、メモリ上のcurrentFileを使用
+                            await fileListView.refresh();
+                            await displayStoryMap(currentFile);
+                        }
+                    }
+                });
+            }
+        }
+        
+        // ストーリー編集時の処理
+        async function handleStoryEdit(change) {
+            console.log('Story edited:', change);
+            
+            // ファイル内のストーリーを更新
+            if (currentFile && currentFile.parsedData) {
+                try {
+                    const storyMap = currentFile.parsedData.integrated_story_map;
+                    const personas = storyMap.personas_stories || {};
+                    let updated = false;
+                    let foundPersonaKey = null;
+                    let foundIndex = -1;
+
+                    // まず現在の所属を探す
+                    Object.keys(personas).forEach(key => {
+                        const list = personas[key].stories || [];
+                        const idx = list.findIndex(s => s.id === change.storyId);
+                        if (idx !== -1) {
+                            foundPersonaKey = key;
+                            foundIndex = idx;
+                        }
+                    });
+
+                    if (foundPersonaKey !== null && foundIndex !== -1) {
+                        const targetStory = personas[foundPersonaKey].stories[foundIndex];
+                        const newPersonaKey = change.updatedData.personaKey || foundPersonaKey;
+                        const updatedStory = {
+                            ...targetStory,
+                            story: change.updatedData.story,
+                            priority: change.updatedData.priority,
+                            version: change.updatedData.version,
+                            acceptance_criteria: change.updatedData.acceptance_criteria || []
+                        };
+
+                        // ペルソナが変わる場合は移動（CROSS は特別扱い）
+                        if (newPersonaKey !== foundPersonaKey) {
+                            // まず元の場所から削除
+                            personas[foundPersonaKey].stories.splice(foundIndex, 1);
+
+                            if (newPersonaKey === 'CROSS') {
+                                // cross_persona_stories セクションへ移動（なければ作成）
+                                storyMap.cross_persona_stories = storyMap.cross_persona_stories || [];
+                                storyMap.cross_persona_stories.push(updatedStory);
+                            } else if (personas[newPersonaKey]) {
+                                personas[newPersonaKey].stories = personas[newPersonaKey].stories || [];
+                                personas[newPersonaKey].stories.push(updatedStory);
+                            } else {
+                                // 新しいペルソナキーが存在しない場合は作成
+                                personas[newPersonaKey] = { name: change.updatedData.personaName || newPersonaKey, stories: [updatedStory] };
+                            }
+                        } else {
+                            personas[foundPersonaKey].stories[foundIndex] = updatedStory;
+                        }
+                        updated = true;
+                    }
+                    if (updated) {
+                        // YAML文字列を再生成
+                        const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                        currentFile.content = yamlText;
+                        // 保存
+                        const saved = await FileManager.updateFile(currentFile.id, {
+                            parsedData: currentFile.parsedData,
+                            content: yamlText
+                        });
+                        currentFile = saved;
+                        document.getElementById('mapDescription').textContent = `最終更新: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`;
+                    }
+                } catch (e) {
+                    console.error('Failed to save edited story:', e);
+                    ErrorNotifier.showRuntimeError('編集内容の保存に失敗しました');
+                }
+            }
+        }
+        
+        // アプリケーション起動
+        document.addEventListener('DOMContentLoaded', initApp);
+        
+        // サイドバー開閉機能の初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarToggle = new SidebarToggle();
+            sidebarToggle.init();
+        });
+    </script>
+</body>
+</html>

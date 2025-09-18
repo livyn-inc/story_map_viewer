@@ -1,0 +1,1557 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    min-width: 100vw;
+}
+
+.container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 20px;
+}
+
+.story-map {
+    /* スクロールは #mapContent で管理するため自身は広がらない */
+    width: 100%;
+    min-width: 0; /* flex子要素の横スクロール有効化 */
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ヘッダー */
+.map-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.map-header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.map-header p {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+/* ペルソナ凡例 */
+.persona-legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 12px 0 20px 0;
+}
+
+.persona-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 12px;
+}
+
+.chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+}
+
+/* 行の構造 */
+.map-row {
+    display: flex;
+    align-items: center;  /* 垂直方向の中央揃え */
+    margin-bottom: 10px;
+    min-height: 80px;
+    position: relative;
+}
+
+.row-label {
+    width: 200px;
+    flex-shrink: 0;  /* 幅が縮まないように固定 */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;  /* row-contentとの間隔 */
+}
+
+.row-label.label-card {
+    width: 200px;
+    min-width: 200px;  /* 最小幅も固定 */
+    max-width: 200px;  /* 最大幅も固定 */
+    background: #ecf0f1;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #2c3e50;
+    box-sizing: border-box;  /* borderを幅に含める */
+}
+
+.row-content {
+    /* flex: 1;  ← 親幅に制限され横幅が縮むため無効化 */
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 1), 240px); /* 列数はJSから注入 */
+    gap: 10px;
+    align-items: flex-start;
+    overflow-x: visible; /* レーン個別スクロールを無効化 */
+    padding: 5px 0;
+    min-width: calc(var(--cols, 1) * 250px); /* グリッド総幅を親へ伝える */
+    width: max-content; /* 内在コンテンツ幅を採用 */
+}
+
+/* カード共通スタイル */
+.card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 240px; /* たてよこ同一サイズ（横） */
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* ユーザーカード */
+.user-card {
+    background: #3498db;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    min-width: 140px;
+}
+
+.user-card .user-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+/* アクティビティカード */
+.activity-card {
+    background: #2c3e50;
+    color: white;
+    width: 240px; /* 固定幅に戻す */
+}
+
+.activity-card h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.activity-card p {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+/* ラベルカード化 */
+.row-label.label-card {
+    background: white;
+    border: 2px solid #34495e;
+    color: #34495e;
+    padding: 0;
+    width: 180px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    margin-right: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.label-card-content {
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    width: 100%;
+}
+
+/* スライスラベル（MVP Release） */
+.slice-label {
+    background: #34495e;
+    color: white;
+    padding: 8px 20px;
+    font-weight: bold;
+    font-size: 14px;
+    margin: 20px 0 10px 0;
+    border-radius: 4px;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.slice-divider {
+    height: 0;
+    border-top: 2px dashed #cbd5e0; /* テキスト無しの水平ライン（薄め） */
+    margin: 12px 0;
+}
+
+.slice-label.priority-2 {
+    background: #f39c12;
+}
+
+/* バックボーンカード */
+.backbone-card {
+    background: #ecf0f1;
+    border: 2px solid #bdc3c7;
+    width: 240px; /* 固定幅に戻す */
+}
+
+.backbone-card h4 {
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.backbone-card p {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+/* ストーリーカード */
+.story-card {
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    width: 240px;
+    position: relative;
+    padding-top: 30px;
+    min-height: 100px;
+}
+
+.story-card.priority-1 {
+    border-color: #e74c3c;
+    background: #fff5f5;
+}
+
+.story-card.priority-2 {
+    border-color: #f39c12;
+    background: #fffbf0;
+}
+
+.story-card.cross-persona {
+    border-color: #9b59b6;
+    background: #f9f5ff;
+}
+
+.story-id {
+    font-size: 11px;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.story-content {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.story-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: #ecf0f1;
+    color: #7f8c8d;
+}
+
+.tag.persona {
+    background: #3498db;
+    color: white;
+}
+
+/* スライス（リリース）*/
+.release-slice {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e74c3c;
+    margin-top: 20px;
+    z-index: 10;
+}
+
+.release-label {
+    position: absolute;
+    left: 140px;
+    background: #e74c3c;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transform: translateY(-50%);
+}
+
+/* フィルターコントロール */
+.filter-controls {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 15px;
+    background: #ecf0f1;
+    border-radius: 6px;
+}
+
+.filter-controls label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.filter-controls select, .filter-controls input {
+    padding: 6px 12px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* モーダル */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.modal-close:hover {
+    color: #2c3e50;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 768px) {
+    .row-label {
+        width: 80px;
+        font-size: 11px;
+    }
+    
+    .card {
+        min-width: 150px;
+    }
+}
+
+/* ローディング */
+.loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #7f8c8d;
+}
+
+.error {
+    text-align: center;
+    padding: 50px;
+    color: #e74c3c;
+    font-size: 16px;
+}
+
+/* ストーリータグの位置調整（v2用） */
+.story-card .story-tag {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    border-radius: 4px 4px 0 0;
+}
+
+/* ストーリー内容のレイアウト */
+.story-content {
+    padding: 8px;
+}
+
+/* 優先度とバージョン表示 */
+.story-priority {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.priority-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+}
+
+.priority-1 {
+    background: #e74c3c;
+}
+
+.priority-2 {
+    background: #f39c12;
+}
+
+.priority-3 {
+    background: #3498db;
+}
+
+.priority-4 {
+    background: #95a5a6;
+}
+
+.priority-5 {
+    background: #bdc3c7;
+}
+
+.version-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #34495e;
+    color: white;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.story-want,
+.story-benefit {
+    margin-bottom: 8px;
+}
+
+.story-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #7f8c8d;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.story-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #2c3e50;
+}
+
+/* 詳細モーダル（v2用） */
+.story-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.story-detail-modal .modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.story-detail-modal .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.story-detail-modal .modal-close:hover {
+    color: #000;
+}
+
+.modal-persona-tag {
+    margin: 20px 0;
+}
+
+.modal-story {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.modal-section {
+    margin: 20px 0;
+}
+
+.modal-section h4 {
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.modal-section ul {
+    margin-left: 20px;
+}
+
+.modal-section li {
+    margin-bottom: 5px;
+}
+
+.modal-section code {
+    background: #ecf0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+
+/* ========== サイドバー開閉機能 ========== */
+
+/* サイドバータイトル行 */
+.sidebar-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* サイドバートグルボタン（共通） */
+.sidebar-toggle-inner,
+.sidebar-toggle-outer {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #718096;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-toggle-inner:hover,
+.sidebar-toggle-outer:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+/* 内側のトグルボタン */
+.sidebar-toggle-inner {
+    color: #e2e8f0;
+}
+
+/* 外側のトグルボタン */
+.sidebar-toggle-outer {
+    position: fixed;
+    left: 16px;
+    top: 20px;
+    z-index: 1001;
+    background: #2d3748;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.sidebar-toggle-outer:hover {
+    background: #4a5568;
+}
+
+/*/* サイドバーの基本設定 */
+.sidebar {
+    width: 380px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease, margin-left 0.3s ease;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* サイドバーの折りたたみ状態 */
+.sidebar.collapsed {
+    transform: translateX(-100%);
+    margin-left: -380px;
+}
+
+/*/*/* メインコンテンツの調整 */
+.main-content {
+    transition: all 0.3s ease;
+    flex: 1;
+    margin-left: 0;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        z-index: 1000;
+        height: 100vh;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+    }
+    
+    .sidebar:not(.collapsed) + .main-content {
+        margin-left: 380px;
+    }
+}
+
+/*/*/*/* ========== サイドバーメニュースタイル ========== */
+
+.sidebar-menu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* サイドバータブ */
+.sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f7fafc;
+    padding: 8px;
+    gap: 4px;
+}
+
+.sidebar-tab {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    color: #718096;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-tab:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.sidebar-tab.active {
+    background: #4299e1;
+    color: white;
+}
+
+/* タブコンテンツ */
+.sidebar-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* flexアイテムのスクロール対応 */
+}
+
+.tab-content {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden; /* 内部でスクロール制御 */
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.content-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.action-btn {
+    background: transparent;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    padding: 4px;
+    cursor: pointer;
+    color: #4a5568;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #4299e1;
+    border-color: #4299e1;
+    color: white;
+}
+
+/* ファイルアクション */
+.file-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.file-item:hover .file-actions {
+    opacity: 1;
+}
+
+.file-action-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #718096;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.file-action-btn:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.file-action-btn.edit-btn:hover {
+    background: #4299e1;
+    color: white;
+}
+
+.file-action-btn.delete-btn:hover {
+    background: #f56565;
+    color: white;
+}
+
+/* 設定コンテンツ */
+.settings-content {
+    padding: 16px;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.setting-item {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.setting-item label {
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.setting-item select,
+.setting-item input[type="checkbox"] {
+    font-size: 14px;
+}
+
+/*/*/* ========== ファイルドロップゾーン ========== */
+
+#uploadContainer {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* スクロール可能に */
+}
+
+.file-drop-zone {
+    flex: 1;
+    min-height: 200px;
+}
+
+/* ========== YAMLエディタスタイル ========== */
+
+.yaml-editor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.yaml-editor-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    height: 80%;
+    max-height: 700px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.yaml-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.yaml-editor-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #2d3748;
+}
+
+.yaml-editor-body {
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.yaml-editor-textarea {
+    width: 100%;
+    height: 100%;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    padding: 12px;
+    resize: none;
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+.yaml-editor-textarea:focus {
+    outline: none;
+    border-color: #4299e1;
+    background: white;
+}
+
+.yaml-editor-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.editor-status {
+    font-size: 13px;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-primary {
+    background: #4299e1;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #3182ce;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+}
+
+/* ========== StoryMapViewer OSS追加スタイル ========== */
+
+/* アプリケーション全体のレイアウト */
+.app-container {
+    display: flex;
+    height: 100vh;
+    background: #edf2f7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    position: relative;
+}
+
+/* サイドバーヘッダー */
+.sidebar-header {
+    padding: 20px;
+    background: #2d3748;
+    color: white;
+    flex-shrink: 0; /* ヘッダーは縮まない */
+}
+
+.sidebar-header h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.app-version {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* サイドバーメニューコンテナ */
+#sidebarMenuContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* アップロードセクション */
+.upload-section {
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* フォルダコンテナ */
+#folderContainer {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* メインコンテンツ調整 */
+.main-content {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+    min-height: 0; /* flexアイテムのスクロール対応 */
+}
+
+.main-content .story-map {
+    height: 100%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* マップアクション（エクスポートボタン） */
+.map-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border: 1px solid #cbd5e0;
+    background: white;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.export-btn:hover {
+    background: #f7fafc;
+    border-color: #4299e1;
+    color: #2b6cb0;
+}
+
+/* 編集完了ボタン（ON状態）を目立たせる */
+.export-btn.cta-edit {
+    background: #3182ce; /* 青系 */
+    color: #fff;
+    border-color: #3182ce;
+    box-shadow: 0 2px 6px rgba(49,130,206,0.3);
+}
+
+.export-btn.cta-edit:hover {
+    background: #2b6cb0;
+    border-color: #2b6cb0;
+}
+
+/* 主要導線としてYAML出力を強調 */
+/* YAMLボタンは通常スタイルへ戻す（他の出力と同等） */
+
+/* ウェルカム画面 */
+.welcome-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+.welcome-icon {
+    color: #cbd5e0;
+    margin-bottom: 24px;
+}
+
+.welcome-state h3 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    color: #2d3748;
+}
+
+.welcome-state p {
+    margin: 0 0 32px 0;
+    color: #718096;
+    font-size: 16px;
+}
+
+.features {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.feature svg {
+    color: #48bb78;
+}
+
+/* マップヘッダー調整 */
+.map-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.map-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #2d3748;
+}
+
+.map-header p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+/* マップコンテンツ */
+#mapContent {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: auto;
+    padding: 20px;
+    min-height: 0; /* flexアイテムのスクロール対応 */
+    display: block; /* コンテンツ幅に合わせてスクロールさせる */
+}
+
+.map-content {
+    overflow-x: auto;
+    overflow-y: auto;
+    /* :rootのCSS変数が未反映なケースに備え、初期値をセット */
+    --cols: 1;
+}
+
+/* ストーリーマップのコンテンツラッパー */
+.story-map-wrapper {
+    min-width: calc(var(--cols, 1) * 250px + 220px);
+    width: max-content;
+    display: inline-block; /* コンテンツ幅に追従して親に横スクロールを出す */
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 1024px) {
+    .features {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .map-actions {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+        margin-top: 12px;
+    }
+}
+
+/* ========== YAML表示モーダル ========== */
+.yaml-view-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.yaml-modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    height: 80%;
+    max-height: 700px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.yaml-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.yaml-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #2d3748;
+}
+
+.yaml-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #718096;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.yaml-modal-close:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.yaml-modal-body {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    background: #f7fafc;
+}
+
+.yaml-modal-body pre {
+    margin: 0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.yaml-modal-body code {
+    color: #2d3748;
+    background: transparent;
+}
+
+.yaml-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.yaml-modal-info {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    color: #718096;
+}
+
+.yaml-copy-btn {
+    padding: 8px 16px;
+    background: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.yaml-copy-btn:hover {
+    background: #3182ce;
+}
+
+/* YAMLモーダル編集ボタン */
+.yaml-edit-btn,
+.yaml-save-btn,
+.yaml-cancel-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+}
+
+.yaml-edit-btn {
+    background: #f39c12;
+    color: white;
+}
+
+.yaml-edit-btn:hover {
+    background: #e67e22;
+}
+
+.yaml-save-btn {
+    background: #27ae60;
+    color: white;
+}
+
+.yaml-save-btn:hover {
+    background: #229954;
+}
+
+.yaml-cancel-btn {
+    background: #95a5a6;
+    color: white;
+}
+
+.yaml-cancel-btn:hover {
+    background: #7f8c8d;
+}
+
+/* 編集中のYAMLコンテンツ */
+.yaml-content[contenteditable="true"] code {
+    outline: none;
+    background: #f8f8f8;
+}
+
+/* ========== ヘルプビュースタイル ========== */
+.help-content {
+    padding: 0;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.help-sections {
+    padding: 16px;
+}
+
+.help-section {
+    margin-bottom: 24px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.help-section h4 {
+    margin: 0 0 12px 0;
+    color: #2d3748;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.help-section h5 {
+    margin: 16px 0 8px 0;
+    color: #4a5568;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.help-section h6 {
+    margin: 12px 0 6px 0;
+    color: #4a5568;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.help-content-block {
+    background: white;
+    border-radius: 6px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.help-content-block ol,
+.help-content-block ul {
+    margin-left: 20px;
+    line-height: 1.8;
+}
+
+.help-content-block li {
+    margin-bottom: 8px;
+}
+
+.yaml-spec,
+.code-block {
+    background: #1a202c;
+    color: #e2e8f0;
+    padding: 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 12px 0;
+}
+
+.yaml-spec code,
+.code-block code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.command-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.command-item h6 {
+    margin-top: 0;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.download-btn:hover {
+    background: #3182ce;
+}
+
+.help-note {
+    background: #fef5e7;
+    border: 1px solid #f9e79f;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.help-content-block a {
+    color: #4299e1;
+    text-decoration: none;
+}
+
+.help-content-block a:hover {
+    text-decoration: underline;
+}
+
+/* ========== ファイルリストスタイル調整 ========== */
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.file-item:hover {
+    background: #f7fafc;
+}
+
+.file-item.active {
+    background: #e6f3ff;
+    border-left: 3px solid #4299e1;
+    padding-left: 13px;
+}
+
+.file-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-icon {
+    flex-shrink: 0;
+    color: #718096;
+}
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d3748;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #718096;
+    flex-wrap: wrap;
+}
+
+.file-meta span {
+    white-space: nowrap;
+}
+
+.file-date {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ファイルリストヘッダー */
+.file-list-header {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0; /* ヘッダーは縮まない */
+}
+
+.file-list-header h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.file-list-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.file-search,
+.file-sort {
+    flex: 1;
+    min-width: 120px;
+    padding: 6px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+}
+
+.file-search:focus,
+.file-sort:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+/* ファイルリストコンテンツ */
+.file-list-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+#fileListContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    min-height: 0; /* flexアイテムのスクロール対応 */
+}
