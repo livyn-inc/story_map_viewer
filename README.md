@@ -1,5 +1,7 @@
 # StoryMapViewer (OSS)
 
+![alt text](smv_capture.png)
+
 YAMLのユーザーストーリーマップをブラウザで可視化・編集する軽量ビューアです。静的ファイルのみで動作します。
 
 ## すぐ使う
