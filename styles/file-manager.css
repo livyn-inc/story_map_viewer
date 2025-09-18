@@ -1,0 +1,319 @@
+/**
+ * ファイル管理機能のスタイル
+ */
+
+/* ファイルドロップゾーン */
+.file-drop-zone {
+  border: 3px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  background: #f7fafc;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin: 20px 0;
+}
+
+.file-drop-zone:hover {
+  border-color: #4299e1;
+  background: #ebf8ff;
+}
+
+.file-drop-zone.drag-over {
+  border-color: #3182ce;
+  background: #bee3f8;
+  transform: scale(1.02);
+}
+
+.drop-icon {
+  color: #a0aec0;
+  margin-bottom: 16px;
+}
+
+.file-drop-zone h3 {
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+
+.file-drop-zone p {
+  color: #718096;
+  margin: 0 0 8px 0;
+}
+
+.file-types {
+  font-size: 14px;
+  color: #a0aec0;
+}
+
+/* アップロード進捗 */
+.upload-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-top: 16px;
+}
+
+.progress-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3182ce;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* アップロード成功・エラー */
+.upload-success,
+.upload-error {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+.upload-success {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.upload-error {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+/* ファイルリストコンテナ */
+.file-list-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ファイルリストヘッダー */
+.file-list-header {
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.file-list-header h3 {
+  margin: 0 0 16px 0;
+  color: #2d3748;
+  font-size: 18px;
+}
+
+.file-list-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.file-search {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.file-search:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.file-sort {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* ファイルリストコンテンツ */
+.file-list-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ファイルアイテム */
+.file-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.file-item:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.file-item.active {
+  border-color: #3182ce;
+  background: #ebf8ff;
+}
+
+.file-item-content {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  gap: 12px;
+}
+
+.file-icon {
+  flex-shrink: 0;
+  color: #718096;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #718096;
+}
+
+.file-project {
+  color: #4299e1;
+}
+
+.file-actions {
+  flex-shrink: 0;
+}
+
+.file-action-btn {
+  padding: 6px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #718096;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.file-action-btn:hover {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.delete-btn:hover {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+/* 空状態 */
+.file-list-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.empty-icon {
+  color: #cbd5e0;
+  margin-bottom: 16px;
+}
+
+.file-list-empty p {
+  margin: 0 0 8px 0;
+}
+
+.text-muted {
+  color: #a0aec0;
+  font-size: 14px;
+}
+
+/* ローディング */
+.file-list-loading {
+  padding: 40px;
+  text-align: center;
+  color: #718096;
+}
+
+/* エラー */
+.file-list-error {
+  padding: 20px;
+  text-align: center;
+  color: #e53e3e;
+  background: #fff5f5;
+  border-radius: 8px;
+}
+
+/* フッター */
+.file-list-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f7fafc;
+  font-size: 14px;
+  color: #718096;
+}
+
+/* レイアウト調整 */
+.app-container {
+  display: flex;
+  height: 100vh;
+  background: #edf2f7;
+}
+
+.sidebar {
+  width: 320px;
+  background: #fff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}

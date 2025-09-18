@@ -1,0 +1,284 @@
+/**
+ * フォルダ監視機能のスタイル
+ */
+
+/* フォルダ監視パネル */
+.folder-watcher-panel {
+  background: #fff;
+  border-radius: 8px;
+  margin: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.folder-watcher-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.folder-watcher-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  color: #2d3748;
+}
+
+.unsupported-badge {
+  padding: 4px 8px;
+  background: #fed7d7;
+  color: #c53030;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+/* フォルダ監視コンテンツ */
+.folder-watcher-content {
+  padding: 20px;
+}
+
+.watcher-description {
+  margin: 0 0 20px 0;
+  color: #718096;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ボタンスタイル */
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #3182ce;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2c5282;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-secondary:hover {
+  background: #cbd5e0;
+}
+
+.select-folder-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* 機能リスト */
+.feature-list {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 6px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.feature-item:last-child {
+  margin-bottom: 0;
+}
+
+.feature-item svg {
+  color: #48bb78;
+  flex-shrink: 0;
+}
+
+/* 監視中の状態 */
+.watching-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f0fff4;
+  border: 1px solid #9ae6b4;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-indicator.active {
+  background: #48bb78;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(72, 187, 120, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0);
+  }
+}
+
+.status-info {
+  flex: 1;
+}
+
+.folder-name {
+  margin: 0;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.file-count {
+  margin: 2px 0 0 0;
+  font-size: 14px;
+  color: #718096;
+}
+
+/* アクション */
+.watcher-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.watcher-actions button {
+  flex: 1;
+  justify-content: center;
+}
+
+/* 同期ログ */
+.sync-log {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sync-log h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+.sync-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #f7fafc;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: #a0aec0;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.log-message {
+  flex: 1;
+  color: #4a5568;
+}
+
+.log-success .log-message {
+  color: #22543d;
+}
+
+.log-warning .log-message {
+  color: #b45309;
+}
+
+.log-error .log-message {
+  color: #c53030;
+}
+
+/* 非対応メッセージ */
+.unsupported-message {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.warning-icon {
+  color: #f6ad55;
+  margin-bottom: 16px;
+}
+
+.unsupported-message h4 {
+  margin: 0 0 8px 0;
+  color: #2d3748;
+}
+
+.unsupported-message p {
+  margin: 0 0 24px 0;
+  color: #718096;
+  line-height: 1.6;
+}
+
+/* ブラウザリンク */
+.browser-links {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.browser-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: #3182ce;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.browser-link:hover {
+  background: #2c5282;
+  transform: translateY(-1px);
+}
