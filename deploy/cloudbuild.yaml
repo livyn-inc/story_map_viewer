@@ -1,0 +1,6 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/story-map-viewer', '-f', 'deploy/Dockerfile', '.']
+images:
+  - 'gcr.io/$PROJECT_ID/story-map-viewer'
+

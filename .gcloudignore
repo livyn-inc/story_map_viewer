@@ -1,0 +1,7 @@
+# gcloudignore for Cloud Build
+# keep deploy/ included
+
+.git
+.DS_Store
+node_modules/
+*.log
