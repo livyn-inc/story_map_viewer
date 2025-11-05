@@ -1,0 +1,25 @@
+runtime: python39
+service: default
+
+handlers:
+  - url: /styles
+    static_dir: styles
+
+  - url: /modules
+    static_dir: modules
+
+  - url: /examples
+    static_dir: examples
+
+  - url: /local_secrets
+    static_dir: local_secrets
+
+  # Static files by extension (optional explicit mapping)
+  - url: /(.*\.(css|js|png|jpg|jpeg|gif|svg|woff2?))$
+    static_files: \1
+    upload: (.*\.(css|js|png|jpg|jpeg|gif|svg|woff2?))$
+
+  # SPA fallback
+  - url: /.*
+    static_files: index.html
+    upload: index.html

@@ -1,0 +1,21 @@
+integrated_story_map:
+  story_map_structure:
+    activities:
+      - id: ACT-01
+        name: "テスト活動"
+    backbones:
+      - id: BB-01
+        activity_id: ACT-XXX   # 存在しない
+        name: "テストBB"
+        sequence: 1
+
+  personas_stories:
+    P001:
+      name: "ユーザー"
+      stories:
+        - id: ST-TEST-001
+          story: "I want 機能を試す"
+          backbone_id: BB-XXX   # 存在しない
+
+
+

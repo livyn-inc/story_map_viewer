@@ -30,11 +30,11 @@
                     
                     <!-- エクスポートボタン -->
                     <div class="map-actions" style="display: none;">
-                        <button id="toggleEdit" class="export-btn" title="編集モード切替">
+                        <button id="addActivityBtn" class="export-btn" title="アクティビティ追加">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            編集
+                            Activity
                         </button>
                         <button id="exportPNG" class="export-btn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -54,12 +54,28 @@
                             </svg>
                             Markdown
                         </button>
+                        <button id="openLocal" class="export-btn" title="ローカルのYAMLを開く">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 3v10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M8 7l4-4 4 4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="3" y="12" width="18" height="8" rx="2" stroke-width="2"/>
+                            </svg>
+                            OPEN
+                        </button>
+                        <button id="loadLinked" class="export-btn" title="現在開いているファイルを再読込">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M4 4v6h6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M20 20v-6h-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M20 14l-6 6-10-10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            LOAD
+                        </button>
                         <button id="exportYAML" class="export-btn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M12 20h9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            YAML
+                            SAVE
                         </button>
                     </div>
                 </div>
@@ -142,6 +158,38 @@
         
         // グローバル変数
         let currentFile = null;
+        // 削除イベントのデデュープ（連続二重発火対策）
+        const __deleteDedup__ = new Map();
+        function __shouldHandleDelete__(storyId) {
+            const now = Date.now();
+            const last = __deleteDedup__.get(storyId) || 0;
+            if (now - last < 2000) return false; // 2秒以内の重複は無視
+            __deleteDedup__.set(storyId, now);
+            setTimeout(() => {
+                // 5秒後にクリーンアップ（同一IDの古い印を消す）
+                if (__deleteDedup__.get(storyId) === now) {
+                    __deleteDedup__.delete(storyId);
+                }
+            }, 5000);
+            return true;
+        }
+
+        // ユーティリティ: 指定IDのストーリーがISM内に存在するか
+        function __findStory__(ism, storyId) {
+            if (!ism || !storyId) return null;
+            // personas
+            for (const key of Object.keys(ism.personas_stories || {})) {
+                const list = ism.personas_stories[key].stories || [];
+                const hit = list.find(s => s.id === storyId);
+                if (hit) return { where: 'personas', key, story: hit };
+            }
+            // cross
+            if (Array.isArray(ism.cross_persona_stories)) {
+                const hit = ism.cross_persona_stories.find(s => s.id === storyId);
+                if (hit) return { where: 'cross', story: hit };
+            }
+            return null;
+        }
         const fileUploader = new FileUploader();
         const fileListView = new FileListView();
         const folderWatcherUI = new FolderWatcherUI();
@@ -192,64 +240,20 @@
                 const listContainer = sidebarMenu.getFileListContainer();
                 fileListView.init(listContainer, onFileSelected, onFileDeleted, onFileEdit);
                 
-                // 初回起動時にサンプルYAMLを読み込む
+                // 初期表示では何も開かない（WELCOME状態のまま）
                 const files = await FileManager.listFiles();
-                if (files.length === 0) {
-                    const sampleFiles = [
-                        './examples/sample.yaml'
-                    ];
-                    
-                    let firstFile = null;
-                    
-                    for (const samplePath of sampleFiles) {
-                        try {
-                            // サンプルYAMLをフェッチ
-                            const response = await fetch(samplePath);
-                            if (response.ok) {
-                                const yamlText = await response.text();
-                                const yamlData = window.jsyaml.load(yamlText);
-                                
-                                const fileName = samplePath.split('/').pop();
-                                
-                                // ファイルとして保存
-                                const sampleFile = {
-                                    id: 'sample-' + fileName.replace('.yaml', '') + '-' + Date.now(),
-                                    name: fileName,
-                                    content: yamlText,
-                                    parsedData: yamlData,
-                                    projectName: yamlData.integrated_story_map?.meta?.project || yamlData.integrated_story_map?.meta?.project_name || 'サンプルプロジェクト',
-                                    uploadedAt: new Date().toISOString(),
-                                    updatedAt: new Date().toISOString(),
-                                    size: new Blob([yamlText]).size
-                                };
-                                
-                                await FileManager.saveFile(sampleFile);
-                                
-                                // 最初のファイルを記録
-                                if (!firstFile) {
-                                    firstFile = sampleFile;
-                                }
-                            }
-                        } catch (error) {
-                            console.error(`サンプルファイル ${samplePath} の読み込みに失敗:`, error);
-                        }
-                    }
-                    
-                    // 最初のサンプルを表示
-                    if (firstFile) {
-                        await displayStoryMap(firstFile);
-                    }
-                    
-                    // ファイルリストを更新
-                    await fileListView.refresh();
-                } else {
-                    // 既にIndexedDBにファイルがある場合は最初の1件を表示
-                    await displayStoryMap(files[0]);
-                }
+                await fileListView.refresh();
                 
                 // フォルダ監視UIの初期化（フォルダタブ内）
+                // ウォッチUIは無効化（明示SAVEのみ運用）
                 const folderWatcherContainer = sidebarMenu.getFolderSyncContainer();
-                folderWatcherUI.init(folderWatcherContainer, onFolderWatcherStatusChange);
+                if (folderWatcherContainer) {
+                    folderWatcherContainer.innerHTML = '<div class="ds-note">Folder Watcher: disabled. 明示的にSAVEしてください。</div>';
+                }
+                // セッション復元は無効化（自動読み込みを防止）
+                // try { await FolderWatcher.restoreIfPossible(); } catch {}
+                // 自動書き戻しも無効化（明示SAVEのみ）
+                try { FileManager.autoWriteBack = false; } catch {}
                 
                 // ヘルプビューの初期化（ヘルプタブ内）
                 const helpContainer = sidebarMenu.getHelpContainer();
@@ -257,9 +261,315 @@
                 
                 // エクスポートボタンのイベント設定
                 setupExportButtons();
+                // OPEN: 任意のローカルYAMLを開く（単純読み込み）
+                const openBtn = document.getElementById('openLocal');
+                if (openBtn) {
+                    openBtn.addEventListener('click', async () => {
+                        try {
+                            let fileHandle = null;
+                            if (window.showOpenFilePicker) {
+                                const [handle] = await window.showOpenFilePicker({
+                                    multiple: false,
+                                    types: [{ description: 'YAML', accept: { 'text/yaml': ['.yaml', '.yml'] } }]
+                                });
+                                fileHandle = handle;
+                            }
+                            if (!fileHandle) return;
+                            const file = await fileHandle.getFile();
+                            const text = await file.text();
+                            const parsed = window.jsyaml.load(text);
+                            const saved = await FileManager.saveFile({
+                                id: 'open-' + Date.now(),
+                                name: file.name,
+                                content: text,
+                                parsedData: parsed,
+                                projectName: parsed?.integrated_story_map?.meta?.project || parsed?.integrated_story_map?.meta?.project_name || file.name,
+                                uploadedAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                                size: file.size
+                            });
+                            await fileListView.refresh();
+                            await displayStoryMap(saved);
+                        } catch (e) {
+                            console.error('OPEN failed:', e);
+                            alert('読み込みに失敗しました');
+                        }
+                    });
+                }
+
+                // LOAD（現在開いているファイルを再読み込み）
+                const loadBtn = document.getElementById('loadLinked');
+                if (loadBtn) {
+                    loadBtn.addEventListener('click', async () => {
+                        try {
+                            if (!currentFile) { alert('ファイルを選択してください'); return; }
+                            // シンプルリロード: セーブピッカー経由で任意ファイルを再読込
+                            let handle = null;
+                            if (window.showOpenFilePicker) {
+                                const [h] = await window.showOpenFilePicker({
+                                    multiple: false,
+                                    types: [{ description: 'YAML', accept: { 'text/yaml': ['.yaml', '.yml'] } }]
+                                });
+                                handle = h;
+                            }
+                            if (!handle) return;
+                            const f = await handle.getFile();
+                            const text = await f.text();
+                            const parsed = window.jsyaml.load(text);
+                            const saved = await FileManager.updateFile(currentFile.id, { parsedData: parsed, content: text, updatedAt: new Date().toISOString() });
+                            currentFile = saved; await displayStoryMap(currentFile);
+                            alert('再読み込みしました');
+                        } catch (e) { console.error('LOAD failed:', e); alert('読み込みに失敗しました'); }
+                    });
+                }
+                // アクティビティ追加
+                const addActBtn = document.getElementById('addActivityBtn');
+                if (addActBtn) {
+                    addActBtn.addEventListener('click', async () => {
+                        if (!currentFile || !currentFile.parsedData) return;
+                        const name = prompt('新しいアクティビティ名'); if (!name) return;
+                        const ism = currentFile.parsedData.integrated_story_map;
+                        const id = `ACT-${Date.now()}`;
+                        ism.story_map_structure.activities = ism.story_map_structure.activities || [];
+                        ism.story_map_structure.activities.push({ id, name });
+                        const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                        const saved = await FileManager.updateFile(currentFile.id, { parsedData: currentFile.parsedData, content: yamlText });
+                        currentFile = saved; await displayStoryMap(currentFile);
+                    });
+                }
                 
-                // 編集モードボタンの設定
-                setupEditButton();
+                // 個別カードエディタのイベント（保存/削除/キャンセル）を一括でハンドリング
+                const mapContainer = document.getElementById('mapContent');
+                mapContainer.addEventListener('editor-saved', async (e) => {
+                    try {
+                        const editorEl = e.target; // editable-story-card
+                        const storyId = editorEl.originalData?.id;
+                        if (!storyId) return;
+                        await saveStoryImmediate(storyId, e.detail.updatedData);
+                    } catch (err) {
+                        console.error('save failed:', err);
+                        ErrorNotifier.showRuntimeError('保存に失敗しました');
+                    }
+                });
+                mapContainer.addEventListener('storyDelete', async (e) => {
+                    try {
+                        const storyId = e.detail?.storyId;
+                        if (!storyId) return;
+                        if (!__shouldHandleDelete__(storyId)) {
+                            console.warn('[DELETE] duplicate ignored (container)', storyId);
+                            return;
+                        }
+                        window.__lastDeletedStoryId = storyId;
+                        await deleteStoryImmediate(storyId);
+                    } catch (err) {
+                        console.error('delete failed:', err);
+                        ErrorNotifier.showRuntimeError('削除に失敗しました');
+                    }
+                });
+                mapContainer.addEventListener('editor-cancel', async () => {
+                    if (currentFile) await displayStoryMap(currentFile);
+                });
+                mapContainer.addEventListener('requestAddStory', async (e) => {
+                    try {
+                        const backboneId = e.detail?.backboneId;
+                        if (!backboneId || !currentFile || !currentFile.parsedData) return;
+                        await addDraftStoryAtTop(backboneId);
+                    } catch (err) {
+                        console.error('add failed:', err);
+                        ErrorNotifier.showRuntimeError('追加に失敗しました');
+                    }
+                });
+                // グローバルフォールバック（シャドウDOM越え防止）
+                window.addEventListener('storyDelete', async (e) => {
+                    try {
+                        const storyId = e.detail?.storyId;
+                        if (!storyId) return;
+                        console.log('[GLOBAL] storyDelete received for', storyId);
+                        if (!__shouldHandleDelete__(storyId)) {
+                            console.warn('[DELETE] duplicate ignored (global)', storyId);
+                            return;
+                        }
+                        window.__lastDeletedStoryId = storyId;
+                        await deleteStoryImmediate(storyId);
+                    } catch (err) {
+                        console.error('global delete failed:', err);
+                        ErrorNotifier.showRuntimeError('削除に失敗しました');
+                    }
+                });
+                mapContainer.addEventListener('requestMoveStory', async (e) => {
+                    try {
+                        const { storyId, direction } = e.detail || {};
+                        if (!storyId || !direction || !currentFile || !currentFile.parsedData) return;
+                        await moveStoryOneStep(storyId, direction);
+                    } catch (err) {
+                        console.error('move failed:', err);
+                        ErrorNotifier.showRuntimeError('並び替えに失敗しました');
+                    }
+                });
+                mapContainer.addEventListener('requestAddStoryBelow', async (e) => {
+                    try {
+                        const { storyId } = e.detail || {}; if (!storyId) return;
+                        const ism = currentFile.parsedData.integrated_story_map;
+                        // 参照元ストーリーの情報
+                        let ref = null;
+                        Object.values(ism.personas_stories||{}).forEach(p=>{
+                            (p.stories||[]).forEach(s=>{ if (s.id===storyId) ref = s; });
+                        });
+                        if (!ref) return;
+                        const newId = `DRAFT-${Date.now()}`;
+                        const newStory = {
+                            id: newId,
+                            story: 'I want , So that ',
+                            backbone_id: ref.backbone_id,
+                            version: ref.version || 'MVP',
+                            priority: ref.priority || 3,
+                            acceptance_criteria: [],
+                            status: 'TODO',
+                            backbone_x_version_sort: (typeof ref.backbone_x_version_sort==='number' ? ref.backbone_x_version_sort+1 : undefined)
+                        };
+                        // 追加位置の直後に挿入（同ペルソナリストにも）
+                        Object.values(ism.personas_stories||{}).forEach(p=>{
+                            const list = p.stories || []; const idx = list.findIndex(s=>s.id===storyId);
+                            if (idx!==-1) { list.splice(idx+1,0,newStory); p.stories = list; }
+                            // 同列の後続のsortを+1
+                            (p.stories||[]).forEach(s=>{ if (s.backbone_id===ref.backbone_id && (s.version||'MVP')===(ref.version||'MVP') && s.id!==newId && typeof s.backbone_x_version_sort==='number' && typeof ref.backbone_x_version_sort==='number' && s.backbone_x_version_sort>ref.backbone_x_version_sort) s.backbone_x_version_sort+=1; });
+                        });
+                        // story_mapping でも直後のsequenceに
+                        ism.story_mapping = ism.story_mapping || {};
+                        const seqRef = (ism.story_mapping[storyId]?.sequence) || 1;
+                        // 既存を+1シフト
+                        Object.entries(ism.story_mapping).forEach(([id,conf])=>{ if (conf.backbone_id===ref.backbone_id && conf.sequence>seqRef) conf.sequence+=1; });
+                        ism.story_mapping[newId] = { backbone_id: ref.backbone_id, sequence: seqRef+1 };
+                        const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                        const sx = mapContainer.scrollLeft; const sy = mapContainer.scrollTop;
+                        const saved = await FileManager.updateFile(currentFile.id, { parsedData: currentFile.parsedData, content: yamlText });
+                        currentFile = saved; await displayStoryMap(currentFile);
+                        mapContainer.scrollLeft = sx; mapContainer.scrollTop = sy;
+                        setTimeout(()=>{
+                            const el = document.querySelector(`[data-story-id="${newId}"]`);
+                            if (el) { el.classList.add('flash-added'); setTimeout(()=> el.classList.remove('flash-added'), 1200); }
+                        },50);
+                    } catch (err) {
+                        console.error('add below failed:', err);
+                        ErrorNotifier.showRuntimeError('追加に失敗しました');
+                    }
+                });
+                mapContainer.addEventListener('requestMoveBackbone', async (e) => {
+                    try {
+                        const { backboneId, direction } = e.detail || {};
+                        if (!backboneId || !direction || !currentFile || !currentFile.parsedData) return;
+                        await moveBackboneOneStep(backboneId, direction);
+                    } catch (err) {
+                        console.error('backbone move failed:', err);
+                        ErrorNotifier.showRuntimeError('バックボーンの並び替えに失敗しました');
+                    }
+                });
+                // --- Activity/Backbone CRUD events ---
+                mapContainer.addEventListener('requestAddBackbone', async (e) => {
+                    const activityId = e.detail?.activityId; if (!activityId) { console.warn('[ADD_BB] no activityId'); return; }
+                    const visibleStartIndex = e.detail?.insertAt ?? 0; // 画面での開始インデックス（同一Activityが連続する左端）
+                    const ism = currentFile.parsedData.integrated_story_map;
+                    const bbId = `BB-${Date.now()}`;
+                    const seq = (ism.story_map_structure.backbones || []).length + 1;
+                    ism.story_map_structure.backbones = ism.story_map_structure.backbones || [];
+                    // 1) 新規Backboneオブジェクト
+                    const newBB = { id: bbId, name: 'New Backbone', sequence: seq, activity_id: activityId };
+                    ism.story_map_structure.backbones.push(newBB);
+                    // 2) 画面上の「このActivityに紐づく最初のBackbone」の直前に挿入
+                    const backboneMap = new Map((ism.story_map_structure.backbones||[]).map(b=>[b.id,b]));
+                    let order = Array.isArray(ism.display_order?.backbones)
+                      ? [...ism.display_order.backbones]
+                      : (ism.story_map_structure.backbones||[]).sort((a,b)=>a.sequence-b.sequence).map(b=>b.id);
+                    // 可視列での開始インデックスから順に、同ActivityのBackboneを探す
+                    let insertAt = order.length;
+                    for (let i = visibleStartIndex; i < order.length; i++) {
+                        const id = order[i];
+                        if (backboneMap.get(id)?.activity_id === activityId) { insertAt = i; break; }
+                    }
+                    // 見つからない場合は末尾
+                    order = order.filter(id=>id!==bbId);
+                    order.splice(insertAt, 0, bbId);
+                    ism.display_order = ism.display_order || {}; ism.display_order.backbones = order;
+                    // 3) sequenceもdisplay_orderに同期（左→右で1..n）
+                    const seqMap = new Map(order.map((id, i) => [id, i + 1]));
+                    (ism.story_map_structure.backbones||[]).forEach(b=>{ if (seqMap.has(b.id)) b.sequence = seqMap.get(b.id); });
+                    const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                    const sx = mapContainer.scrollLeft; const sy = mapContainer.scrollTop;
+                    const saved = await FileManager.updateFile(currentFile.id, { parsedData: currentFile.parsedData, content: yamlText });
+                    currentFile = saved; await displayStoryMap(currentFile);
+                    // スクロール位置を復元
+                    mapContainer.scrollLeft = sx; mapContainer.scrollTop = sy;
+                    // 追加されたカードを強調
+                    setTimeout(()=>{
+                        const el = document.querySelector(`[data-backbone-id="${bbId}"]`);
+                        if (el) {
+                            el.classList.add('flash-added');
+                            setTimeout(()=> el.classList.remove('flash-added'), 1200);
+                        }
+                    }, 50);
+                });
+                mapContainer.addEventListener('requestEditBackbone', async (e) => {
+                    const { backboneId: bbId, newName, newActivityId } = e.detail || {}; if (!bbId) return;
+                    const ism = currentFile.parsedData.integrated_story_map;
+                    const bb = (ism.story_map_structure.backbones || []).find(b=>b.id===bbId); if (!bb) return;
+                    if (typeof newName === 'string') bb.name = newName;
+                    const targetAct = newActivityId || bb.activity_id;
+                    if (targetAct && targetAct !== bb.activity_id) {
+                        bb.activity_id = targetAct;
+                        let order = Array.isArray(ism.display_order?.backbones)
+                          ? [...ism.display_order.backbones] : [];
+                        order = order.filter(id=>id!==bbId);
+                        const backboneMap = new Map((ism.story_map_structure.backbones||[]).map(b=>[b.id,b]));
+                        let insertAt = order.findIndex(id => backboneMap.get(id)?.activity_id === targetAct);
+                        if (insertAt === -1) insertAt = order.length;
+                        order.splice(insertAt, 0, bbId);
+                        ism.display_order = ism.display_order || {}; ism.display_order.backbones = order;
+                    }
+                    const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                    const saved = await FileManager.updateFile(currentFile.id, { parsedData: currentFile.parsedData, content: yamlText });
+                    currentFile = saved; await displayStoryMap(currentFile);
+                });
+                mapContainer.addEventListener('requestDeleteBackbone', async (e) => {
+                    const bbId = e.detail?.backboneId; if (!bbId) return;
+                    if (!confirm('関連ストーリーも削除されます。実行しますか？')) return;
+                    const ism = currentFile.parsedData.integrated_story_map;
+                    const sx = mapContainer.scrollLeft; const sy = mapContainer.scrollTop;
+                    ism.story_map_structure.backbones = (ism.story_map_structure.backbones || []).filter(b=>b.id!==bbId);
+                    if (Array.isArray(ism.display_order?.backbones)) ism.display_order.backbones = ism.display_order.backbones.filter(id=>id!==bbId);
+                    Object.values(ism.personas_stories||{}).forEach(p=>{ p.stories = (p.stories||[]).filter(s=>s.backbone_id!==bbId); });
+                    if (Array.isArray(ism.cross_persona_stories)) ism.cross_persona_stories = ism.cross_persona_stories.filter(s=>s.backbone_id!==bbId);
+                    if (ism.story_mapping) Object.keys(ism.story_mapping).forEach(k=>{ if ((ism.story_mapping[k]?.backbone_id)===bbId) delete ism.story_mapping[k]; });
+                    const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                    const saved = await FileManager.updateFile(currentFile.id, { parsedData: currentFile.parsedData, content: yamlText });
+                    currentFile = saved; await displayStoryMap(currentFile);
+                    mapContainer.scrollLeft = sx; mapContainer.scrollTop = sy;
+                });
+                mapContainer.addEventListener('requestEditActivity', async (e) => {
+                    const actId = e.detail?.activityId; if (!actId) return;
+                    const name = prompt('アクティビティ名を入力'); if (!name) return;
+                    const ism = currentFile.parsedData.integrated_story_map;
+                    const act = (ism.story_map_structure.activities || []).find(a=>a.id===actId); if (!act) return; act.name = name;
+                    const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                    const saved = await FileManager.updateFile(currentFile.id, { parsedData: currentFile.parsedData, content: yamlText });
+                    currentFile = saved; await displayStoryMap(currentFile);
+                });
+                mapContainer.addEventListener('requestDeleteActivity', async (e) => {
+                    const actId = e.detail?.activityId; if (!actId) return;
+                    if (!confirm('このアクティビティ配下のバックボーンとストーリーが削除されます。実行しますか？')) return;
+                    const ism = currentFile.parsedData.integrated_story_map;
+                    const sx = mapContainer.scrollLeft; const sy = mapContainer.scrollTop;
+                    ism.story_map_structure.activities = (ism.story_map_structure.activities || []).filter(a=>a.id!==actId);
+                    const toRemove = new Set((ism.story_map_structure.backbones||[]).filter(b=>b.activity_id===actId).map(b=>b.id));
+                    ism.story_map_structure.backbones = (ism.story_map_structure.backbones||[]).filter(b=>!toRemove.has(b.id));
+                    if (Array.isArray(ism.display_order?.backbones)) ism.display_order.backbones = ism.display_order.backbones.filter(id=>!toRemove.has(id));
+                    Object.values(ism.personas_stories||{}).forEach(p=>{ p.stories = (p.stories||[]).filter(s=>!toRemove.has(s.backbone_id)); });
+                    if (Array.isArray(ism.cross_persona_stories)) ism.cross_persona_stories = ism.cross_persona_stories.filter(s=>!toRemove.has(s.backbone_id));
+                    if (ism.story_mapping) Object.keys(ism.story_mapping).forEach(k=>{ if (toRemove.has(ism.story_mapping[k]?.backbone_id)) delete ism.story_mapping[k]; });
+                    const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+                    const saved = await FileManager.updateFile(currentFile.id, { parsedData: currentFile.parsedData, content: yamlText });
+                    currentFile = saved; await displayStoryMap(currentFile);
+                    mapContainer.scrollLeft = sx; mapContainer.scrollTop = sy;
+                });
                 
             } catch (error) {
                 console.error('App initialization error:', error);
@@ -327,8 +637,9 @@
                 // バリデーション
                 const errors = SchemaValidator.validate(file.parsedData);
                 if (errors.length > 0) {
+                    // 表示は継続しつつ、上部に警告を表示
                     ErrorNotifier.showErrors(errors);
-                    return;
+                    console.warn('[VALIDATION] warnings:', errors);
                 }
                 
                 // データ構成
@@ -344,18 +655,15 @@
                 // マップコンテンツの準備
                 const mapContent = document.getElementById('mapContent');
                 mapContent.innerHTML = `
-                    <div class="story-map-wrapper" style="width: max-content;">
-                        <div class="map-row">
-                            <div class="row-label">アクティビティ</div>
-                            <div class="row-content" id="activities"></div>
+                    <div class=\"story-map-wrapper\"> 
+                        <div class=\"map-row sticky-header sticky-activities\">
+                            <div class=\"row-content\" id=\"activities\"></div>
                         </div>
-                        <div class="map-row">
-                            <div class="row-label">バックボーン</div>
-                            <div class="row-content" id="backbones"></div>
+                        <div class=\"map-row sticky-header sticky-backbones\">
+                            <div class=\"row-content\" id=\"backbones\"></div>
                         </div>
-                        <div class="map-row">
-                            <div class="row-label">ユーザーストーリー</div>
-                            <div class="row-content" id="stories"></div>
+                        <div class=\"map-row\">
+                            <div class=\"row-content\" id=\"stories\"></div>
                         </div>
                     </div>
                 `;
@@ -442,6 +750,40 @@
                 ErrorNotifier.showRuntimeError(error.message, error.stack);
             }
         }
+
+        // 不整合の掃除: 削除後の幽霊IDや重複を除去
+        function sanitizeStoryMap(ism) {
+            if (!ism) return;
+            const idSet = new Set();
+            const pushUnique = (arr) => {
+                if (!Array.isArray(arr)) return [];
+                const out = [];
+                arr.forEach(s => {
+                    if (!s || !s.id) return;
+                    if (idSet.has(s.id)) return; // 重複は除外
+                    idSet.add(s.id);
+                    out.push(s);
+                });
+                return out;
+            };
+
+            // personas_stories 重複除去
+            Object.values(ism.personas_stories || {}).forEach(p => {
+                p.stories = pushUnique(p.stories || []);
+            });
+            // cross 重複除去
+            if (Array.isArray(ism.cross_persona_stories)) {
+                ism.cross_persona_stories = (ism.cross_persona_stories || []).filter(s => s && s.id && !idSet.has(s.id) && (idSet.add(s.id) || true));
+            }
+
+            // story_mappingの孤児削除
+            const valid = new Set();
+            Object.values(ism.personas_stories || {}).forEach(p => (p.stories || []).forEach(s => valid.add(s.id)));
+            (ism.cross_persona_stories || []).forEach(s => valid.add(s.id));
+            if (ism.story_mapping) {
+                Object.keys(ism.story_mapping).forEach(id => { if (!valid.has(id)) delete ism.story_mapping[id]; });
+            }
+        }
         
         // マップ表示のリセット
         function resetMapDisplay() {
@@ -491,10 +833,16 @@
         }
         
         // フォルダ監視ステータス変更時
+        let __suppressFolderUpdate__ = false;
+        let __suppressTimer__ = null;
         function onFolderWatcherStatusChange(status) {
             console.log('Folder watcher status:', status);
             
             // ファイルリストを更新
+            if (__suppressFolderUpdate__) {
+                console.warn('[WATCH] update suppressed once');
+                return;
+            }
             if (status.type === 'added' || status.type === 'updated' || status.type === 'deleted') {
                 fileListView.refresh();
             }
@@ -552,130 +900,391 @@
                 }
             });
 
-            // YAML（再インポート用）
+            // SAVE（ローカルファイルに上書き or エクスポート）
             document.getElementById('exportYAML').addEventListener('click', async () => {
                 if (!currentFile) {
                     alert('ファイルを選択してください');
                     return;
                 }
+                // 画面が保持している currentFile をソース・オブ・トゥルースとして保存
+                console.group('[SAVE]');
+                console.log('fileId:', currentFile.id, 'name:', currentFile.name, 'localPath:', currentFile.localPath);
+                try {
+                    const sid = window.__lastDeletedStoryId;
+                    const hit = __findStory__(currentFile.parsedData?.integrated_story_map, sid);
+                    const inMapping = !!currentFile.parsedData?.integrated_story_map?.story_mapping?.[sid];
+                    console.log('[SAVE][pre] lastDeleted=', sid, 'existsInArrays=', !!hit, 'existsInMapping=', inMapping);
+                } catch {}
+                // 保存前サニタイズ
+                sanitizeStoryMap(currentFile.parsedData.integrated_story_map);
                 const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
-                const blob = new Blob([yamlText], { type: 'text/yaml;charset=utf-8' });
-                const filename = `${currentFile.projectName || currentFile.name || 'story-map'}.yaml`;
-                window.saveAs(blob, filename);
+                // DBの内容も直前の状態で同期（更新日時の整合）
+                try {
+                    await FileManager.updateFile(currentFile.id, {
+                        parsedData: currentFile.parsedData,
+                        content: yamlText
+                    });
+                } catch {}
+                try {
+                    // 常にファイルピッカーで保存（フォルダ同期は廃止）
+                    const baseName = `${currentFile.projectName || currentFile.name || 'story-map'}.yaml`;
+                    if (window.showSaveFilePicker) {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: baseName,
+                            types: [{ description: 'YAML', accept: { 'text/yaml': ['.yaml', '.yml'] } }]
+                        });
+                        const writable = await handle.createWritable();
+                        await writable.write(yamlText);
+                        await writable.close();
+                        alert('ファイルに保存しました');
+                    } else {
+                        const blob = new Blob([yamlText], { type: 'text/yaml;charset=utf-8' });
+                        window.saveAs(blob, baseName);
+                    }
+                } catch (err) {
+                    console.error('SAVE failed:', err);
+                    alert('保存に失敗しました');
+                }
+                try {
+                    const sid = window.__lastDeletedStoryId;
+                    const hit = __findStory__(currentFile.parsedData?.integrated_story_map, sid);
+                    const inMapping = !!currentFile.parsedData?.integrated_story_map?.story_mapping?.[sid];
+                    console.log('[SAVE][post] lastDeleted=', sid, 'existsInArrays=', !!hit, 'existsInMapping=', inMapping);
+                } catch {}
+                console.groupEnd();
             });
         }
         
-        // 編集モードボタンの設定
-        function setupEditButton() {
-            const toggleEditBtn = document.getElementById('toggleEdit');
-            if (toggleEditBtn) {
-                toggleEditBtn.addEventListener('click', async () => {
-                    const isEnabled = inlineEditor.toggleEditMode();
-                    
-                    if (isEnabled) {
-                        toggleEditBtn.classList.add('active');
-                        toggleEditBtn.innerHTML = `
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            編集完了
-                        `;
-                        toggleEditBtn.classList.add('cta-edit');
-                        
-                        // 編集時のコールバック設定
-                        inlineEditor.changeCallback = handleStoryEdit;
-                    } else {
-                        toggleEditBtn.classList.remove('active');
-                        toggleEditBtn.classList.remove('cta-edit');
-                        toggleEditBtn.innerHTML = `
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            編集
-                        `;
-                        // 編集終了後は最新データで再描画
-                        if (currentFile) {
-                            // DBから最新を取得する代わりに、メモリ上のcurrentFileを使用
-                            await fileListView.refresh();
-                            await displayStoryMap(currentFile);
-                        }
-                    }
-                });
-            }
-        }
+        // グローバル編集UIは廃止
         
         // ストーリー編集時の処理
-        async function handleStoryEdit(change) {
-            console.log('Story edited:', change);
-            
-            // ファイル内のストーリーを更新
-            if (currentFile && currentFile.parsedData) {
-                try {
+        async function saveStoryImmediate(storyId, updatedData) {
+            if (!currentFile || !currentFile.parsedData) return;
                     const storyMap = currentFile.parsedData.integrated_story_map;
                     const personas = storyMap.personas_stories || {};
-                    let updated = false;
                     let foundPersonaKey = null;
                     let foundIndex = -1;
 
-                    // まず現在の所属を探す
                     Object.keys(personas).forEach(key => {
                         const list = personas[key].stories || [];
-                        const idx = list.findIndex(s => s.id === change.storyId);
+                const idx = list.findIndex(s => s.id === storyId);
                         if (idx !== -1) {
                             foundPersonaKey = key;
                             foundIndex = idx;
                         }
                     });
 
-                    if (foundPersonaKey !== null && foundIndex !== -1) {
-                        const targetStory = personas[foundPersonaKey].stories[foundIndex];
-                        const newPersonaKey = change.updatedData.personaKey || foundPersonaKey;
-                        const updatedStory = {
-                            ...targetStory,
-                            story: change.updatedData.story,
-                            priority: change.updatedData.priority,
-                            version: change.updatedData.version,
-                            acceptance_criteria: change.updatedData.acceptance_criteria || []
-                        };
+            // cross_persona_stories対応
+            let inCross = false;
+            if (foundPersonaKey === null && Array.isArray(storyMap.cross_persona_stories)) {
+                const idx = storyMap.cross_persona_stories.findIndex(s => s.id === storyId);
+                if (idx !== -1) {
+                    inCross = true;
+                    foundIndex = idx;
+                }
+            }
 
-                        // ペルソナが変わる場合は移動（CROSS は特別扱い）
-                        if (newPersonaKey !== foundPersonaKey) {
-                            // まず元の場所から削除
+            if (foundIndex === -1 && foundPersonaKey === null && !inCross) return;
+
+            const applyUpdate = (s) => {
+                s.story = updatedData.story ?? s.story;
+                s.priority = updatedData.priority ?? s.priority;
+                s.version = updatedData.version ?? s.version;
+                s.acceptance_criteria = Array.isArray(updatedData.acceptance_criteria) ? updatedData.acceptance_criteria : (s.acceptance_criteria || []);
+                if (updatedData.status) s.status = updatedData.status;
+                if (updatedData.backbone_id && updatedData.backbone_id !== s.backbone_id) {
+                    // バックボーン移動: story_mapping と sort を初期化し先頭へ
+                    const oldBackbone = s.backbone_id;
+                    s.backbone_id = updatedData.backbone_id;
+                    storyMap.story_mapping = storyMap.story_mapping || {};
+                    // 旧列の順序を詰める
+                    Object.entries(storyMap.story_mapping).forEach(([id, conf]) => {
+                        if (conf.backbone_id === oldBackbone) {
+                            if (conf.sequence > (storyMap.story_mapping[s.id]?.sequence || 0)) {
+                                // そのまま
+                            }
+                        }
+                    });
+                    // 新列の既存sequenceを+1して先頭に
+                    Object.entries(storyMap.story_mapping).forEach(([id, conf]) => {
+                        if (conf.backbone_id === s.backbone_id) {
+                            conf.sequence = (conf.sequence || 1) + 1;
+                        }
+                    });
+                    storyMap.story_mapping[s.id] = { backbone_id: s.backbone_id, sequence: 1 };
+                    // sortも先頭へ
+                    s.backbone_x_version_sort = 1;
+                    Object.values(storyMap.personas_stories || {}).forEach(p => {
+                        (p.stories || []).forEach(st => {
+                            if (st !== s && st.backbone_id === s.backbone_id && (st.version || 'MVP') === (s.version || 'MVP')) {
+                                if (typeof st.backbone_x_version_sort === 'number') st.backbone_x_version_sort += 1;
+                            }
+                        });
+                    });
+                }
+            };
+
+            const newPersonaKey = updatedData.personaKey || foundPersonaKey;
+            if (inCross) {
+                const s = storyMap.cross_persona_stories[foundIndex];
+                if (newPersonaKey && newPersonaKey !== 'CROSS') {
+                    // crossから通常ペルソナへ移動
+                    storyMap.cross_persona_stories.splice(foundIndex, 1);
+                    const target = personas[newPersonaKey] || (personas[newPersonaKey] = { name: updatedData.personaName || newPersonaKey, stories: [] });
+                    target.stories.push(s);
+                    applyUpdate(target.stories[target.stories.length - 1]);
+                } else {
+                    applyUpdate(s);
+                }
+            } else {
+                const s = personas[foundPersonaKey].stories[foundIndex];
+                if (newPersonaKey && newPersonaKey !== foundPersonaKey) {
+                    // ペルソナ変更で移動
                             personas[foundPersonaKey].stories.splice(foundIndex, 1);
-
                             if (newPersonaKey === 'CROSS') {
-                                // cross_persona_stories セクションへ移動（なければ作成）
                                 storyMap.cross_persona_stories = storyMap.cross_persona_stories || [];
-                                storyMap.cross_persona_stories.push(updatedStory);
-                            } else if (personas[newPersonaKey]) {
-                                personas[newPersonaKey].stories = personas[newPersonaKey].stories || [];
-                                personas[newPersonaKey].stories.push(updatedStory);
+                        storyMap.cross_persona_stories.push(s);
+                        applyUpdate(storyMap.cross_persona_stories[storyMap.cross_persona_stories.length - 1]);
                             } else {
-                                // 新しいペルソナキーが存在しない場合は作成
-                                personas[newPersonaKey] = { name: change.updatedData.personaName || newPersonaKey, stories: [updatedStory] };
+                        const target = personas[newPersonaKey] || (personas[newPersonaKey] = { name: updatedData.personaName || newPersonaKey, stories: [] });
+                        target.stories.push(s);
+                        applyUpdate(target.stories[target.stories.length - 1]);
                             }
                         } else {
-                            personas[foundPersonaKey].stories[foundIndex] = updatedStory;
+                    applyUpdate(s);
                         }
-                        updated = true;
                     }
-                    if (updated) {
-                        // YAML文字列を再生成
-                        const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
-                        currentFile.content = yamlText;
+
                         // 保存
+            sanitizeStoryMap(currentFile.parsedData.integrated_story_map);
+            const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
                         const saved = await FileManager.updateFile(currentFile.id, {
                             parsedData: currentFile.parsedData,
                             content: yamlText
                         });
                         currentFile = saved;
                         document.getElementById('mapDescription').textContent = `最終更新: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`;
-                    }
-                } catch (e) {
-                    console.error('Failed to save edited story:', e);
-                    ErrorNotifier.showRuntimeError('編集内容の保存に失敗しました');
+            await displayStoryMap(currentFile);
+        }
+
+        async function deleteStoryImmediate(storyId) {
+            console.group('[DELETE]');
+            if (!currentFile || !currentFile.parsedData) {
+                console.warn('[DELETE] no currentFile/parsedData');
+                console.groupEnd();
+                return;
+            }
+            const storyMap = currentFile.parsedData.integrated_story_map;
+            console.log('target:', storyId);
+
+            const personas = storyMap.personas_stories || {};
+            let removed = false;
+            Object.keys(personas).forEach(key => {
+                const list = personas[key].stories || [];
+                const idx = list.findIndex(s => s.id === storyId);
+                if (idx !== -1) {
+                    list.splice(idx, 1);
+                    removed = true;
+                }
+            });
+            if (Array.isArray(storyMap.cross_persona_stories)) {
+                const idx = storyMap.cross_persona_stories.findIndex(s => s.id === storyId);
+                if (idx !== -1) {
+                    storyMap.cross_persona_stories.splice(idx, 1);
+                    removed = true;
                 }
             }
+
+            let mappingDeleted = false;
+            if (storyMap.story_mapping) {
+                // 完全削除（IDキー削除 + sequence再採番）
+                if (storyMap.story_mapping[storyId]) mappingDeleted = true;
+                delete storyMap.story_mapping[storyId];
+                const byBackbone = {};
+                Object.entries(storyMap.story_mapping).forEach(([id, conf]) => {
+                    const bb = conf.backbone_id;
+                    if (!bb) return;
+                    (byBackbone[bb] = byBackbone[bb] || []).push({ id, seq: conf.sequence || 9999 });
+                });
+                Object.values(byBackbone).forEach(list => {
+                    list.sort((a,b)=>a.seq-b.seq);
+                    list.forEach((item,i)=>{ storyMap.story_mapping[item.id].sequence = i+1; });
+                });
+            }
+            console.log('[DELETE] removed(from arrays)=', removed, 'mappingDeleted=', mappingDeleted);
+            if (!removed && !mappingDeleted) {
+                console.warn('[DELETE] nothing to save');
+                console.groupEnd();
+                return;
+            }
+
+            // 孤児/重複のクリーンアップ
+            if (typeof sanitizeStoryMap === 'function') {
+                try { sanitizeStoryMap(storyMap); } catch (e) { console.warn('[DELETE] sanitize failed', e); }
+            }
+
+            const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+            const mapContainer = document.getElementById('mapContent');
+            const sx = mapContainer ? mapContainer.scrollLeft : 0;
+            const sy = mapContainer ? mapContainer.scrollTop : 0;
+            try {
+                const saved = await FileManager.updateFile(currentFile.id, {
+                    parsedData: currentFile.parsedData,
+                    content: yamlText
+                });
+                currentFile = saved;
+                document.getElementById('mapDescription').textContent = `最終更新: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`;
+                } catch (e) {
+                console.error('[DELETE] save failed', e);
+            }
+            await displayStoryMap(currentFile);
+            if (mapContainer) { mapContainer.scrollLeft = sx; mapContainer.scrollTop = sy; }
+            console.groupEnd();
+        }
+
+        async function addDraftStoryAtTop(backboneId) {
+            const yaml = currentFile.parsedData.integrated_story_map;
+            const versionOrder = yaml.version_definitions?.order || ['MVP'];
+            const version = versionOrder[0] || 'MVP';
+            const newId = `DRAFT-${Date.now()}`;
+
+            // 代表ペルソナ（最初のペルソナ）に入れる
+            const firstPersonaKey = Object.keys(yaml.personas_stories || {})[0];
+            if (!firstPersonaKey) throw new Error('ペルソナが見つかりません');
+            yaml.personas_stories[firstPersonaKey].stories = yaml.personas_stories[firstPersonaKey].stories || [];
+            const story = {
+                id: newId,
+                story: 'I want , So that ',
+                backbone_id: backboneId,
+                version,
+                priority: 3,
+                acceptance_criteria: [],
+                status: 'TODO',
+                backbone_x_version_sort: 1
+            };
+            // 既存の同バックボーン×バージョンのソートを+1シフト（先頭に入れる）
+            Object.values(yaml.personas_stories).forEach(p => {
+                (p.stories || []).forEach(s => {
+                    if (s.backbone_id === backboneId && (s.version || 'MVP') === version) {
+                        if (typeof s.backbone_x_version_sort === 'number') {
+                            s.backbone_x_version_sort += 1;
+                        }
+                    }
+                });
+            });
+            yaml.personas_stories[firstPersonaKey].stories.unshift(story);
+
+            // story_mappingも先頭に来るように sequence=1、他を+1
+            yaml.story_mapping = yaml.story_mapping || {};
+            Object.entries(yaml.story_mapping).forEach(([id, conf]) => {
+                if (conf.backbone_id === backboneId) {
+                    conf.sequence = (conf.sequence || 1) + 1;
+                }
+            });
+            yaml.story_mapping[newId] = { backbone_id: backboneId, sequence: 1 };
+
+            // 保存
+            const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+            const saved = await FileManager.updateFile(currentFile.id, {
+                parsedData: currentFile.parsedData,
+                content: yamlText
+            });
+            currentFile = saved;
+            document.getElementById('mapDescription').textContent = `最終更新: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`;
+
+            // 再描画後、該当ストーリーを即編集状態に
+            await displayStoryMap(currentFile);
+            setTimeout(() => {
+                const card = document.querySelector(`.story-card[data-story-id="${newId}"]`);
+                if (card) {
+                    const btn = card.querySelector('.story-edit-btn');
+                    if (btn) btn.click();
+                }
+            }, 50);
+        }
+
+        async function moveStoryOneStep(storyId, direction) {
+            const ism = currentFile.parsedData.integrated_story_map;
+            // story情報の取得
+            let storyRef = null;
+            Object.values(ism.personas_stories || {}).forEach(p => {
+                (p.stories || []).forEach(s => {
+                    if (s.id === storyId) storyRef = s;
+                });
+            });
+            if (!storyRef) return;
+            const backboneId = storyRef.backbone_id;
+            const version = storyRef.version || 'MVP';
+            // 同グループの候補取得
+            const group = [];
+            Object.values(ism.personas_stories || {}).forEach(p => {
+                (p.stories || []).forEach(s => {
+                    if (s.backbone_id === backboneId && (s.version || 'MVP') === version) {
+                        group.push(s);
+                    }
+                });
+            });
+            // sort順で整列
+            group.sort((a, b) => (a.backbone_x_version_sort ?? 9999) - (b.backbone_x_version_sort ?? 9999));
+            const idx = group.findIndex(s => s.id === storyId);
+            if (idx === -1) return;
+            const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+            if (swapWith < 0 || swapWith >= group.length) return; // 端は無視
+            const a = group[idx];
+            const b = group[swapWith];
+            const tmp = a.backbone_x_version_sort || (idx + 1);
+            a.backbone_x_version_sort = b.backbone_x_version_sort || (swapWith + 1);
+            b.backbone_x_version_sort = tmp;
+
+            // story_mapping.sequence も同様に入れ替え
+            ism.story_mapping = ism.story_mapping || {};
+            const seqA = (ism.story_mapping[a.id]?.sequence) || (idx + 1);
+            const seqB = (ism.story_mapping[b.id]?.sequence) || (swapWith + 1);
+            ism.story_mapping[a.id] = { backbone_id: backboneId, sequence: seqB };
+            ism.story_mapping[b.id] = { backbone_id: backboneId, sequence: seqA };
+
+            // 保存
+            const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+            const saved = await FileManager.updateFile(currentFile.id, {
+                parsedData: currentFile.parsedData,
+                content: yamlText
+            });
+            currentFile = saved;
+            document.getElementById('mapDescription').textContent = `最終更新: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`;
+            await displayStoryMap(currentFile);
+        }
+
+        async function moveBackboneOneStep(backboneId, direction) {
+            const ism = currentFile.parsedData.integrated_story_map;
+            // 並びの基準: display_order.backbones があればそれを、なければ structure.backbones.sequence を使って並べ替え
+            const order = ism.display_order?.backbones ? [...ism.display_order.backbones]
+              : (ism.story_map_structure?.backbones || []).sort((a,b)=>a.sequence-b.sequence).map(b=>b.id);
+            const idx = order.indexOf(backboneId);
+            if (idx === -1) return;
+            const swapWith = direction === 'left' ? idx - 1 : idx + 1;
+            if (swapWith < 0 || swapWith >= order.length) return;
+            [order[idx], order[swapWith]] = [order[swapWith], order[idx]];
+            // 保存先は display_order.backbones に固定（今後の表示も安定）
+            ism.display_order = ism.display_order || {};
+            ism.display_order.backbones = order;
+            // story_map_structure.backbones の sequence も display_order に同期（左→右で1..n）
+            if (Array.isArray(ism.story_map_structure?.backbones)) {
+                const seqMap = new Map(order.map((id, i) => [id, i + 1]));
+                ism.story_map_structure.backbones.forEach(b => {
+                    if (seqMap.has(b.id)) {
+                        b.sequence = seqMap.get(b.id);
+                    }
+                });
+            }
+
+            const yamlText = window.jsyaml.dump(currentFile.parsedData, { lineWidth: 120 });
+            const saved = await FileManager.updateFile(currentFile.id, {
+                parsedData: currentFile.parsedData,
+                content: yamlText
+            });
+            currentFile = saved;
+            document.getElementById('mapDescription').textContent = `最終更新: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`;
+            await displayStoryMap(currentFile);
         }
         
         // アプリケーション起動

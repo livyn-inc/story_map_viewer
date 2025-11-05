@@ -1,0 +1,1130 @@
+integrated_story_map:
+  meta:
+    created_date: '2025-09-18'
+    project: Palma MVP1
+    phase: Discovery - ストーリーマップ
+    description: コード解析ベースのドラフト（自動生成）
+    version: v2
+    source: dev/explaza-palma apps/web, packages/prisma からの自動抽出
+    ui_options:
+      hide_priority_2: false
+  version_definitions:
+    order:
+      - MVP
+      - Release1
+      - Release2
+      - v1.0
+      - v2.0
+      - Future
+  display_order:
+    backbones:
+      - BB-01
+      - BB-04
+      - BB-11
+      - BB-02
+      - BB-05
+      - BB-06
+      - BB-09
+      - BB-10
+      - BB-07
+      - BB-08
+      - BB-03
+      - BB-12
+  story_map_structure:
+    activities:
+      - id: ACT-01
+        name: 組織運営
+        description: 組織・チームの設定と管理
+        users:
+          - 組織管理者
+          - 認証ユーザー
+      - id: ACT-02
+        name: プロジェクト管理
+        description: プロジェクトの作成と進行管理
+        users:
+          - プロジェクト利用者
+      - id: ACT-03
+        name: 業務自動化
+        description: ワークフローによる業務プロセスの自動化
+        users:
+          - プロジェクト利用者
+      - id: ACT-04
+        name: AI活用
+        description: AIを活用した分析と意思決定支援
+        users:
+          - AIアシスタント利用者
+      - id: ACT-05
+        name: 認証・セキュリティ
+        description: ユーザー認証とアクセス管理
+        users:
+          - 認証ユーザー
+          - 全ユーザー
+      - id: ACT-06
+        name: 統合・連携
+        description: 外部ツールとの統合とAPI提供
+        users:
+          - 開発者
+          - システム管理者
+      - id: ACT-07
+        name: 分析・監視
+        description: 利用状況分析と運用監視
+        users:
+          - 組織管理者
+          - システム管理者
+    backbones:
+      - id: BB-01
+        activity_id: ACT-01
+        name: 組織セットアップ
+        description: 組織・チームの初期設定
+        sequence: 1
+      - id: BB-02
+        activity_id: ACT-01
+        name: 組織切替・管理
+        description: 日常的な組織管理業務
+        sequence: 2
+      - id: BB-03
+        activity_id: ACT-01
+        name: 組織ダッシュボード
+        description: 組織の状況把握と分析
+        sequence: 3
+      - id: BB-04
+        activity_id: ACT-02
+        name: プロジェクト作成
+        description: 新規プロジェクトの立ち上げ
+        sequence: 1
+      - id: BB-05
+        activity_id: ACT-02
+        name: プロジェクト運用
+        description: プロジェクトの日常運用
+        sequence: 2
+      - id: BB-06
+        activity_id: ACT-03
+        name: ワークフロー作成
+        description: 新規ワークフローの設計
+        sequence: 1
+      - id: BB-07
+        activity_id: ACT-03
+        name: ワークフロー実行
+        description: ワークフローの実行と管理
+        sequence: 2
+      - id: BB-08
+        activity_id: ACT-03
+        name: ワークフロー共有
+        description: ワークフローの共有と再利用
+        sequence: 3
+      - id: BB-09
+        activity_id: ACT-04
+        name: コンテキスト管理
+        description: AIで使用するファイル管理
+        sequence: 1
+      - id: BB-10
+        activity_id: ACT-04
+        name: AI対話
+        description: AIとの対話による支援
+        sequence: 2
+      - id: BB-11
+        activity_id: ACT-05
+        name: ユーザー認証
+        description: ログイン・ログアウト管理
+        sequence: 1
+      - id: BB-12
+        activity_id: ACT-05
+        name: アクセス制御
+        description: 権限とコンテキスト管理
+        sequence: 2
+      - id: BB-13
+        activity_id: ACT-07
+        name: 高度分析・監視
+        description: 利用状況分析と運用監視機能
+        sequence: 1
+      - id: BB-14
+        activity_id: ACT-06
+        name: 外部統合・API
+        description: 外部ツール統合とAPI提供
+        sequence: 1
+      - id: BB-15
+        activity_id: ACT-06
+        name: モバイル・アクセシビリティ
+        description: モバイル対応とアクセシビリティ向上
+        sequence: 2
+  analysis_targets:
+    frontend_routes:
+      - apps/web/src/routes/(auth)
+      - apps/web/src/routes/(dashboard)
+      - apps/web/src/routes/organization/**
+      - apps/web/src/routes/project/**
+      - apps/web/src/routes/team/**
+      - apps/web/src/routes/api/**
+    domain_features:
+      - features/organization
+      - features/project
+      - features/context-bucket
+      - features/workflow
+      - features/thread
+    backend_schema:
+      - packages/prisma/schema/_schema.prisma
+      - packages/prisma/schema/auth.prisma
+  story_mapping:
+    ST-ORG-NEW-001:
+      backbone_id: BB-01
+      sequence: 1
+    ST-ORG-001:
+      backbone_id: BB-01
+      sequence: 2
+    ST-ORG-002:
+      backbone_id: BB-02
+      sequence: 1
+    ST-ORG-UI-001:
+      backbone_id: BB-02
+      sequence: 2
+    ST-ACT-001:
+      backbone_id: BB-02
+      sequence: 3
+    ST-ORG-003:
+      backbone_id: BB-03
+      sequence: 1
+    ST-PRJ-001:
+      backbone_id: BB-04
+      sequence: 1
+    ST-PRJ-002:
+      backbone_id: BB-05
+      sequence: 1
+    ST-PRJ-SEARCH-001:
+      backbone_id: BB-05
+      sequence: 2
+    ST-WF-003:
+      backbone_id: BB-06
+      sequence: 1
+    ST-WF-002:
+      backbone_id: BB-06
+      sequence: 2
+    ST-WF-TPL-001:
+      backbone_id: BB-06
+      sequence: 3
+    ST-WF-001:
+      backbone_id: BB-07
+      sequence: 1
+    ST-WF-HIST-001:
+      backbone_id: BB-07
+      sequence: 2
+    ST-WF-SEARCH-001:
+      backbone_id: BB-07
+      sequence: 3
+    ST-WF-IMP-001:
+      backbone_id: BB-08
+      sequence: 1
+    CST-WF-PORTABILITY:
+      backbone_id: BB-08
+      sequence: 2
+    ST-CB-001:
+      backbone_id: BB-09
+      sequence: 1
+    ST-CB-002:
+      backbone_id: BB-09
+      sequence: 2
+    ST-CB-OPS-001:
+      backbone_id: BB-09
+      sequence: 3
+    ST-CB-DND-001:
+      backbone_id: BB-09
+      sequence: 4
+    ST-CHAT-001:
+      backbone_id: BB-10
+      sequence: 1
+    ST-CHAT-HIST-001:
+      backbone_id: BB-10
+      sequence: 2
+    ST-AUTH-001:
+      backbone_id: BB-11
+      sequence: 1
+    ST-AUTH-002:
+      backbone_id: BB-11
+      sequence: 2
+    CST-UX-PERF-001:
+      backbone_id: BB-12
+      sequence: 1
+    CST-ERROR-001:
+      backbone_id: BB-12
+      sequence: 2
+    ST-SEARCH-001:
+      backbone_id: BB-05
+      sequence: 10
+    ST-DASH-CUSTOM-001:
+      backbone_id: BB-03
+      sequence: 10
+    ST-AI-WF-OPT-001:
+      backbone_id: BB-07
+      sequence: 10
+    ST-AI-CTX-SMART-001:
+      backbone_id: BB-10
+      sequence: 10
+    ST-AI-DOC-AUTO-001:
+      backbone_id: BB-07
+      sequence: 11
+    ST-PERM-RBAC-001:
+      backbone_id: BB-12
+      sequence: 10
+    ST-COLLAB-EXT-001:
+      backbone_id: BB-08
+      sequence: 10
+    ST-INTEG-TOOLS-001:
+      backbone_id: BB-14
+      sequence: 1
+    ST-API-FULL-001:
+      backbone_id: BB-14
+      sequence: 2
+    ST-MOBILE-RESP-001:
+      backbone_id: BB-15
+      sequence: 1
+    ST-MONITOR-USAGE-001:
+      backbone_id: BB-13
+      sequence: 1
+    ST-BACKUP-DR-001:
+      backbone_id: BB-13
+      sequence: 2
+  personas_stories:
+    P001:
+      name: 組織管理者
+      role: Org/Team 管理・設定
+      stories:
+        - id: ST-ORG-001
+          story: As an 組織管理者, I want チーム作成・切替, So that 組織の作業単位を柔軟に管理できる
+          backbone_id: BB-01
+          acceptance_criteria:
+            - 新規チーム作成が成功し、DBに反映される（createTeamWorkflow）
+            - アクティブチーム切替が反映され、ダッシュボードが更新される（setActiveTeamWorkflow）
+            - 権限のないユーザーは作成/切替操作ができない
+          ui_screens:
+            - /team/new
+            - /organization/select
+          linked_modules:
+            - features/organization
+            - features/project
+          code_refs:
+            - apps/web/src/lib/features/organization/workflows/createTeamWorkflow.ts
+            - apps/web/src/lib/features/organization/workflows/setActiveTeamWorkflow.ts
+            - apps/web/src/routes/organization/select/+page.server.ts
+            - apps/web/src/routes/organization/select/schema.ts
+            - apps/web/src/routes/team/new/+page.server.ts
+            - apps/web/src/routes/team/new/schema.ts
+          version: MVP
+          priority: 1
+          status: DONE
+          backbone_x_version_sort: 2
+        - id: ST-ORG-NEW-001
+          story: As an 組織管理者, I want 組織作成, So that 新しい組織単位で運用を開始できる
+          backbone_id: BB-01
+          acceptance_criteria:
+            - 組織新規作成ページのバリデーションを満たすと作成成功（organization/new）
+            - 作成後に選択/ダッシュボードへ遷移
+            - 重複名称や権限不足はエラー表示
+          ui_screens:
+            - /organization/new
+          linked_modules:
+            - routes/organization/new/*
+            - features/organization/gateway/organizationGateway.ts
+          code_refs:
+            - apps/web/src/routes/organization/new/+page.server.ts
+            - apps/web/src/routes/organization/new/schema.ts
+            - apps/web/src/routes/organization/new/+page.svelte
+            - apps/web/src/lib/features/organization/gateway/organizationGateway.ts
+          version: MVP
+          priority: 1
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-ORG-002
+          story: As an 組織管理者, I want 組織の切替・保持, So that 組織横断で作業文脈を正しく維持できる
+          backbone_id: BB-02
+          acceptance_criteria:
+            - アクティブ組織の設定API（/api/set-active-organization）が成功し、セッション/クッキーに反映
+            - 組織切替後、プロジェクト/ワークフロー一覧が該当組織に切り替わる
+            - 権限のない組織への切替は拒否される
+          ui_screens:
+            - /organization/select
+            - /(dashboard)
+          linked_modules:
+            - routes/api/set-active-organization
+            - features/organization
+          code_refs:
+            - apps/web/src/routes/api/set-active-organization/+server.ts
+            - apps/web/src/routes/api/set-active-organization/schema.ts
+            - apps/web/src/routes/api/set-active-team/+server.ts
+            - apps/web/src/routes/api/set-active-team/schema.ts
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-ORG-003
+          story: As an 組織管理者, I want 組織ダッシュボード参照, So that 状況把握と意思決定ができる
+          backbone_id: BB-03
+          acceptance_criteria:
+            - 組織ダッシュボードの取得ワークフローが正しく実行（retrieveOrganizationDashboard）
+            - 組織/チーム/プロジェクトの主要指標が表示される
+            - 非所属の組織ダッシュボードは表示されない
+          ui_screens:
+            - /(dashboard)
+          linked_modules:
+            - features/organization/workflows/retrieveOrganizationDashboard.ts
+          code_refs:
+            - apps/web/src/lib/features/organization/workflows/retrieveOrganizationDashboard.ts
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-ORG-UI-001
+          story: As an 組織管理者, I want 所属切替UI（AffiliationSwitcher）, So that 組織/チーム文脈を素早く切替できる
+          backbone_id: BB-02
+          acceptance_criteria:
+            - AffiliationSwitcherからの切替がAPI成功とUI反映に連動
+            - 現在のアクティブ組織/チームが視覚的に分かる（NavigationUser）
+            - 権限外の選択肢は表示/選択不可
+          ui_screens:
+            - ナビゲーションヘッダー
+          linked_modules:
+            - features/organization/components/AffiliationSwitcher.svelte
+            - features/organization/components/NavigationUser.svelte
+          code_refs:
+            - apps/web/src/lib/features/organization/components/AffiliationSwitcher.svelte
+            - apps/web/src/lib/features/organization/components/NavigationUser.svelte
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 2
+    P002:
+      name: プロジェクト利用者
+      role: プロジェクト閲覧・作成・運用
+      stories:
+        - id: ST-PRJ-001
+          story: As a プロジェクト利用者, I want プロジェクト作成・一覧, So that 作業単位を開始・把握できる
+          backbone_id: BB-04
+          acceptance_criteria:
+            - プロジェクト作成フローが完了し一覧に現れる（createProjectWorkflow, listProjects）
+            - アクセス権に応じて閲覧可能なプロジェクトのみ表示
+            - プロジェクト詳細ページへの遷移が可能
+          ui_screens:
+            - /project
+            - /project/[projectId]
+          linked_modules:
+            - features/project
+          code_refs:
+            - apps/web/src/lib/features/project/workflows/createProjectWorkflow.ts
+            - apps/web/src/lib/features/project/workflows/listProjects.ts
+            - apps/web/src/lib/features/project/repository/projectsRepository.ts
+            - apps/web/src/lib/features/project/components/NewProjectDialog.svelte
+            - apps/web/src/lib/features/project/components/NewProjectDialog.remote.ts
+          version: MVP
+          priority: 1
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-WF-001
+          story: As a プロジェクト利用者, I want ワークフローの参照・実行, So that 標準化された手順で処理できる
+          backbone_id: BB-07
+          acceptance_criteria:
+            - プロジェクト配下のワークフロー一覧が参照可能（listWorkflowWorkflow）
+            - ノード（Prompt/FileRead/FileWrite）の設定がUIで編集可能
+            - 実行結果がUIに反映・保存される（workflowExecutor）
+          ui_screens:
+            - /project/[projectId]/workflow
+            - /project/[projectId]/workflow/[workflowId]
+          linked_modules:
+            - features/workflow
+          code_refs:
+            - apps/web/src/lib/features/workflow/workflows/listWorkflowWorkflow.ts
+            - apps/web/src/lib/features/workflow/components/WorkflowExecutor.svelte
+            - apps/web/src/lib/features/workflow/components/WorkflowList.svelte
+            - apps/web/src/lib/features/workflow/repository/workflowRepository.ts
+          version: MVP
+          priority: 1
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-PRJ-002
+          story: As a プロジェクト利用者, I want プロジェクトダッシュボード参照, So that 進行状況と構成要素を把握できる
+          backbone_id: BB-05
+          acceptance_criteria:
+            - プロジェクトレイアウト/ダッシュボード取得（retrieveProjectLayoutDashboardWorkflow）が成功
+            - 主要ウィジェット（ワークフロー一覧/最近の実行等）が表示
+            - アクセス権に応じて情報がフィルタされる
+          ui_screens:
+            - /project/[projectId]
+          linked_modules:
+            - features/project/workflows/retrieveProjectLayoutDashboardWorkflow.ts
+          code_refs:
+            - apps/web/src/lib/features/project/workflows/retrieveProjectLayoutDashboardWorkflow.ts
+          version: MVP
+          priority: 2
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-WF-002
+          story: As a プロジェクト利用者, I want ワークフロー編集, So that 手順を柔軟にカスタマイズできる
+          backbone_id: BB-06
+          acceptance_criteria:
+            - ノード追加/削除、エッジ接続がUIで編集可能（WorkflowEditor・NodeConfigPanel）
+            - 各ノードの設定（Prompt/入出力ファイル/変数）が検証付きで保存される
+            - 無効な設定は保存不可・エラーメッセージ表示（errorsモジュール）
+          ui_screens:
+            - /project/[projectId]/workflow/[workflowId]
+          linked_modules:
+            - features/workflow/components/WorkflowEditor.svelte
+            - features/workflow/components/nodes/*
+            - features/workflow/components/config/*
+          code_refs:
+            - apps/web/src/lib/features/workflow/components/WorkflowEditor.svelte
+            - apps/web/src/lib/features/workflow/components/NodeConfigPanel.svelte
+            - apps/web/src/lib/features/workflow/components/config/*.svelte
+            - apps/web/src/lib/features/workflow/components/nodes/*.svelte
+          version: MVP
+          priority: 2
+          status: DONE
+          backbone_x_version_sort: 2
+        - id: ST-WF-003
+          story: As a プロジェクト利用者, I want 新規ワークフロー作成, So that 新しい業務手順を登録できる
+          backbone_id: BB-06
+          acceptance_criteria:
+            - 新規作成ダイアログから保存まで完了（createWorkflowWorkflow）
+            - 一覧に即時反映（listWorkflowWorkflow）
+            - 名称重複・必須項目未設定はバリデーションエラー
+          ui_screens:
+            - /project/[projectId]/workflow
+          linked_modules:
+            - features/workflow/workflows/createWorkflowWorkflow.ts
+            - features/workflow/workflows/listWorkflowWorkflow.ts
+          code_refs:
+            - apps/web/src/lib/features/workflow/workflows/createWorkflowWorkflow.ts
+            - apps/web/src/lib/features/workflow/components/NewWorkflowDialog.svelte
+            - apps/web/src/lib/features/workflow/components/NewWorkflowDialog.remote.ts
+          version: MVP
+          priority: 2
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-PRJ-SEARCH-001
+          story: As a プロジェクト利用者, I want プロジェクト一覧の検索/並び替え/フィルタ, So that 目的のプロジェクトを素早く見つけられる
+          backbone_id: BB-05
+          acceptance_criteria:
+            - 名称/作成者/更新日などでの検索・並び替えが可能
+            - 権限に応じた結果フィルタ
+            - 0件時のガイダンス表示
+          ui_screens:
+            - /project
+          linked_modules:
+            - features/project/repository/projectsRepository.ts
+            - features/project/workflows/listProjects.ts
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 2
+        - id: ST-WF-HIST-001
+          story: As a プロジェクト利用者, I want 実行履歴の参照/リトライ, So that 失敗時の調査と再実行ができる
+          backbone_id: BB-07
+          acceptance_criteria:
+            - 実行履歴一覧/詳細（成功/失敗/実行時間/出力ファイル）が見える
+            - 失敗実行の条件変更リトライが可能
+            - 履歴はプロジェクト/ワークフロー単位でフィルタ
+          ui_screens:
+            - /project/[projectId]/workflow/[workflowId]
+          linked_modules:
+            - features/workflow/entities/workflowExecution.ts
+            - features/workflow/components/WorkflowExecutor.svelte
+          code_refs:
+            - apps/web/src/lib/features/workflow/entities/workflowExecution.ts
+            - apps/web/src/lib/features/workflow/components/WorkflowExecutor.svelte
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 2
+        - id: ST-WF-IMP-001
+          story: As a プロジェクト利用者, I want ワークフローのYAMLインポート/エクスポート, So that 設定を共有・再利用できる
+          backbone_id: BB-08
+          acceptance_criteria:
+            - YAMLからのインポート時にスキーマ検証・エラー詳細提示（yamlParser）
+            - 現在のワークフローをYAMLとしてエクスポート可能
+            - 不正YAMLは保存不可
+          ui_screens:
+            - /project/[projectId]/workflow/[workflowId]
+          linked_modules:
+            - features/workflow/utils/yamlParser.ts
+            - features/workflow/components/*
+          code_refs:
+            - apps/web/src/lib/features/workflow/utils/yamlParser.ts
+            - apps/web/src/lib/features/workflow/components/WorkflowEditor.svelte
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-WF-SEARCH-001
+          story: As a プロジェクト利用者, I want ワークフロー一覧の検索/フィルタ, So that 大量のワークフローから目的のものを探せる
+          backbone_id: BB-07
+          acceptance_criteria:
+            - 名称/タグ/更新日でのフィルタ
+            - 空検索時は全件、入力時は部分一致
+            - UI上でフィルタ条件が保持される
+          ui_screens:
+            - /project/[projectId]/workflow
+          linked_modules:
+            - features/workflow/repository/workflowRepository.ts
+            - features/workflow/workflows/listWorkflowWorkflow.ts
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 3
+        - id: ST-WF-TPL-001
+          story: As a プロジェクト利用者, I want サンプルからのワークフロー作成, So that テンプレートを起点に素早く構築できる
+          backbone_id: BB-06
+          acceptance_criteria:
+            - sample.yamlを読み込み、ノード/エッジが自動配置
+            - 必須パラメータは初期値の入力を促す
+            - 保存前に検証を実施
+          ui_screens:
+            - /project/[projectId]/workflow
+          linked_modules:
+            - features/workflow/sample.yaml
+            - features/workflow/components/NewWorkflowDialog.svelte
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 3
+    P003:
+      name: AIアシスタント利用者
+      role: 文脈ファイルの管理・会話活用
+      stories:
+        - id: ST-CB-001
+          story: As a 利用者, I want コンテキストバケットでファイル管理, So that AIとのやり取りで参照できる
+          backbone_id: BB-09
+          acceptance_criteria:
+            - ファイルツリー表示/プレビュー/アップロードができる（FileTree, FilePreviewDialog）
+            - 会話UIから文脈参照が機能する（AIAssistant/Chat）
+            - アクセス権に応じた可視性
+          ui_screens:
+            - /context-bucket
+            - Chat
+          linked_modules:
+            - features/context-bucket
+            - features/thread
+          code_refs:
+            - apps/web/src/lib/features/context-bucket/components/FileExplorer.svelte
+            - apps/web/src/lib/features/context-bucket/components/FileTree.svelte
+            - apps/web/src/lib/features/context-bucket/components/FilePreviewDialog.svelte
+            - apps/web/src/lib/features/context-bucket/repository/filesRepository.ts
+          version: MVP
+          priority: 2
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-CB-002
+          story: As a 利用者, I want ワークフローでのファイル入出力, So that 処理結果を再利用できる
+          backbone_id: BB-09
+          acceptance_criteria:
+            - FileReadNode/FileWriteNode経由でバケットのファイルを読み書き可能
+            - 実行結果ファイルがバケットに保存・参照できる
+            - 権限制御に従いアクセス制限が効く
+          ui_screens:
+            - /project/[projectId]/workflow/[workflowId]
+          linked_modules:
+            - features/workflow/components/nodes/FileReadNode.svelte
+            - features/workflow/components/nodes/FileWriteNode.svelte
+            - features/context-bucket/repository/filesRepository.ts
+          code_refs:
+            - apps/web/src/lib/features/workflow/components/nodes/FileReadNode.svelte
+            - apps/web/src/lib/features/workflow/components/nodes/FileWriteNode.svelte
+            - apps/web/src/lib/features/context-bucket/repository/filesRepository.ts
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 2
+        - id: ST-CB-DND-001
+          story: As a 利用者, I want ドラッグ&ドロップでのファイルアップロード, So that 直感的にファイル登録できる
+          backbone_id: BB-09
+          acceptance_criteria:
+            - D&Dで複数ファイルを追加できる
+            - 重複名時のリネーム/上書き確認
+            - 進捗/エラーメッセージの表示
+          ui_screens:
+            - /context-bucket
+          linked_modules:
+            - features/context-bucket/components/NewFileDialog.svelte
+            - features/context-bucket/components/FileExplorer.svelte
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 4
+        - id: ST-CB-OPS-001
+          story: As a 利用者, I want バケットのファイル操作（新規/名前変更/移動/削除）, So that 資産を整理できる
+          backbone_id: BB-09
+          acceptance_criteria:
+            - ファイル/フォルダのCRUDに成功し、ツリーへ即時反映
+            - 移動/リネーム時に参照リンクが破綻しない
+            - 権限制御に従って操作可否が変わる
+          ui_screens:
+            - /context-bucket
+          linked_modules:
+            - features/context-bucket/components/FileExplorer.svelte
+            - features/context-bucket/repository/filesRepository.ts
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 3
+        - id: ST-CHAT-001
+          story: As a 利用者, I want 文脈付きチャット, So that 目的指向の支援を受けられる
+          backbone_id: BB-10
+          acceptance_criteria:
+            - Chat UI上でバケットの選択ファイルを参照して応答が改善
+            - api/chatエンドポイントを通じてコンテキストが反映
+            - 長文/大容量時のエラーハンドリングが適切
+          ui_screens:
+            - Chat
+          linked_modules:
+            - routes/api/chat/+server.ts
+            - features/thread/components/Chat.svelte
+            - features/context-bucket/components/*
+          code_refs:
+            - apps/web/src/routes/api/chat/+server.ts
+            - apps/web/src/lib/features/thread/components/Chat.svelte
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-CHAT-HIST-001
+          story: As a 利用者, I want 会話履歴の一覧/再開, So that 過去のやり取りを踏まえて作業を継続できる
+          backbone_id: BB-10
+          acceptance_criteria:
+            - スレッド一覧から選択して再開
+            - 履歴のタイトル/更新時刻/関連ファイルが見える
+            - 履歴はプロジェクト/組織コンテキストに紐付く
+          ui_screens:
+            - Chat
+          linked_modules:
+            - features/thread/components/Chat.svelte
+          version: MVP
+          priority: 4
+          status: DONE
+          backbone_x_version_sort: 2
+    P004:
+      name: 認証ユーザー
+      role: サインアップ/ログイン/ログアウトとコンテキスト切替
+      stories:
+        - id: ST-AUTH-001
+          story: As a 認証ユーザー, I want サインアップ/ログイン, So that 適切な権限で機能を利用できる
+          backbone_id: BB-11
+          acceptance_criteria:
+            - signup/loginページでスキーマバリデーション成功時にセッション確立
+            - 失敗時にエラーメッセージ表示、リトライ可能
+            - ユーザーロールがPrismaスキーマに基づき付与・確認される
+          ui_screens:
+            - /(auth)/signup
+            - /(auth)/login
+          linked_modules:
+            - routes/(auth)/*
+            - packages/prisma/schema/auth.prisma
+          code_refs:
+            - apps/web/src/routes/(auth)/signup/+page.server.ts
+            - apps/web/src/routes/(auth)/signup/schema.ts
+            - apps/web/src/routes/(auth)/signup/+page.svelte
+            - apps/web/src/routes/(auth)/login/+page.server.ts
+            - apps/web/src/routes/(auth)/login/schema.ts
+            - apps/web/src/routes/(auth)/login/+page.svelte
+            - packages/prisma/schema/auth.prisma
+          version: MVP
+          priority: 1
+          status: DONE
+          backbone_x_version_sort: 1
+        - id: ST-AUTH-002
+          story: As a 認証ユーザー, I want ログアウト, So that 共有端末でも安全に利用できる
+          backbone_id: BB-11
+          acceptance_criteria:
+            - /api/logout でセッションが破棄される
+            - ログアウト後は保護ページへアクセス不可
+            - ログインページへリダイレクト
+          ui_screens:
+            - /(dashboard)
+          linked_modules:
+            - routes/api/logout/+server.ts
+          code_refs:
+            - apps/web/src/routes/api/logout/+server.ts
+          version: MVP
+          priority: 2
+          status: DONE
+          backbone_x_version_sort: 2
+        - id: ST-ACT-001
+          story: As a 認証ユーザー, I want アクティブTeam/Orgの切替, So that 作業文脈を適切に反映できる
+          backbone_id: BB-02
+          acceptance_criteria:
+            - /api/set-active-team と /api/set-active-organization が成功しUI反映
+            - 切替状態がCookie/Sessionに保存
+            - 権限外の対象には切替不可
+          ui_screens:
+            - /organization/select
+          linked_modules:
+            - routes/api/set-active-team/+server.ts
+            - routes/api/set-active-organization/+server.ts
+          code_refs:
+            - apps/web/src/routes/api/set-active-team/+server.ts
+            - apps/web/src/routes/api/set-active-team/schema.ts
+            - apps/web/src/routes/api/set-active-organization/+server.ts
+            - apps/web/src/routes/api/set-active-organization/schema.ts
+          version: MVP
+          priority: 3
+          status: DONE
+          backbone_x_version_sort: 3
+    P005:
+      name: システム管理者
+      role: 運用監視・統合管理
+      stories:
+        - id: ST-SEARCH-001
+          story: As a 全ユーザー, I want 横断的な全文検索, So that 必要な情報を素早く見つけられる
+          backbone_id: BB-05
+          acceptance_criteria:
+            - ファイル内容・メタデータの全文検索が可能
+            - 検索結果のファセット分類（プロジェクト、日付、タイプ別）
+            - 検索履歴とお気に入り機能
+            - 権限に応じた検索結果フィルタリング
+          ui_screens:
+            - /search
+            - グローバル検索バー
+          linked_modules:
+            - features/search
+            - features/indexing
+          version: Release1
+          priority: 1
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-DASH-CUSTOM-001
+          story: As a 全ユーザー, I want 個人用ダッシュボード, So that 自分の作業に最適化された情報を得られる
+          backbone_id: BB-03
+          acceptance_criteria:
+            - ウィジェット配置のドラッグ&ドロップカスタマイズ
+            - 個人KPIトラッキング設定
+            - 通知センター統合
+            - ショートカット機能
+          ui_screens:
+            - /(dashboard)/personal
+            - /settings/dashboard
+          linked_modules:
+            - features/dashboard/personal
+            - features/widgets
+          version: Release1
+          priority: 2
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-AI-WF-OPT-001
+          story: As a プロジェクト利用者, I want AIによるワークフロー最適化提案, So that 効率的な手順を自動発見できる
+          backbone_id: BB-07
+          acceptance_criteria:
+            - 実行履歴からのパターン分析エンジン
+            - ボトルネック自動検出とアラート
+            - 最適化提案の具体的な改善案提示
+            - A/Bテスト機能による効果測定
+          ui_screens:
+            - /project/[projectId]/workflow/[workflowId]/optimize
+            - /analytics/workflow-performance
+          linked_modules:
+            - features/ai/workflow-optimizer
+            - features/analytics/performance
+          version: v1.0
+          priority: 1
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-AI-CTX-SMART-001
+          story: As a AIアシスタント利用者, I want プロジェクト全体を理解するAI, So that より的確な支援を受けられる
+          backbone_id: BB-10
+          acceptance_criteria:
+            - プロジェクト履歴の自動学習機能
+            - 関連ファイル自動推薦エンジン
+            - ユーザー意図予測機能
+            - 専門用語辞書の自動構築・更新
+          ui_screens:
+            - Chat（拡張版）
+            - /project/[projectId]/ai-insights
+          linked_modules:
+            - features/ai/context-understanding
+            - features/ai/intent-prediction
+          version: v1.0
+          priority: 2
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-AI-DOC-AUTO-001
+          story: As a プロジェクト利用者, I want ワークフロー実行から自動でドキュメント生成, So that 手動作業を削減できる
+          backbone_id: BB-07
+          acceptance_criteria:
+            - 実行ログからの手順書自動生成
+            - 結果サマリーの自動作成
+            - 改善提案レポートの生成
+            - 多言語対応（日英）
+          ui_screens:
+            - /project/[projectId]/workflow/[workflowId]/documentation
+            - /project/[projectId]/reports
+          linked_modules:
+            - features/ai/document-generator
+            - features/reports/auto-generation
+          version: v2.0
+          priority: 3
+          status: TODO
+          backbone_x_version_sort: 1
+    P006:
+      name: 開発者・システム管理者
+      role: 統合・API・運用監視
+      stories:
+        - id: ST-PERM-RBAC-001
+          story: As an 組織管理者, I want 細かい権限設定, So that セキュリティを保ちながら柔軟な運用ができる
+          backbone_id: BB-12
+          acceptance_criteria:
+            - ロールベースアクセス制御（RBAC）の実装
+            - プロジェクト単位の権限継承設定
+            - 一時的権限付与（期限付き）機能
+            - 監査ログ機能
+          ui_screens:
+            - /organization/permissions
+            - /project/[projectId]/access-control
+          linked_modules:
+            - features/auth/rbac
+            - features/audit/logging
+          version: Release1
+          priority: 3
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-COLLAB-EXT-001
+          story: As a プロジェクト利用者, I want 外部組織との安全な共有, So that パートナーと効率的に協働できる
+          backbone_id: BB-08
+          acceptance_criteria:
+            - ゲストアクセス機能（期限付き）
+            - 共有プロジェクト管理機能
+            - 外部API連携（Slack, Teams等）
+            - 共有リンク生成（期限・権限設定）
+          ui_screens:
+            - /project/[projectId]/sharing
+            - /collaboration/external
+          linked_modules:
+            - features/collaboration/external
+            - features/sharing/secure-links
+          version: Release2
+          priority: 2
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-INTEG-TOOLS-001
+          story: As a プロジェクト利用者, I want 既存ツールとの連携, So that 既存ワークフローを活かせる
+          backbone_id: BB-14
+          acceptance_criteria:
+            - GitHub/GitLab連携（リポジトリ同期）
+            - Jira/Linear連携（チケット管理）
+            - Google Workspace/Microsoft 365統合
+            - Zapier/Make.com統合
+          ui_screens:
+            - /integrations
+            - /project/[projectId]/integrations
+          linked_modules:
+            - features/integrations/github
+            - features/integrations/jira
+            - features/integrations/workspace
+          version: Release2
+          priority: 1
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-API-FULL-001
+          story: As a 開発者, I want 豊富なAPI, So that カスタム統合を構築できる
+          backbone_id: BB-14
+          acceptance_criteria:
+            - RESTful API完全提供
+            - Webhook設定機能
+            - API認証・レート制限
+            - SDK提供（JavaScript, Python）
+          ui_screens:
+            - /developer/api-docs
+            - /developer/webhooks
+          linked_modules:
+            - api/v1/*
+            - sdk/javascript
+            - sdk/python
+          version: v2.0
+          priority: 2
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-MOBILE-RESP-001
+          story: As a 全ユーザー, I want モバイルでの快適な操作, So that 場所を選ばず作業できる
+          backbone_id: BB-15
+          acceptance_criteria:
+            - レスポンシブデザイン最適化
+            - オフライン機能（基本操作）
+            - プッシュ通知対応
+            - 音声入力対応
+          ui_screens:
+            - 全画面（モバイル最適化）
+          linked_modules:
+            - features/mobile/responsive
+            - features/mobile/offline
+            - features/mobile/notifications
+          version: v1.0
+          priority: 3
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-MONITOR-USAGE-001
+          story: As an 組織管理者, I want 利用状況の詳細分析, So that 運用改善と投資判断ができる
+          backbone_id: BB-13
+          acceptance_criteria:
+            - 利用統計ダッシュボード
+            - パフォーマンス監視機能
+            - エラー追跡・アラート機能
+            - コスト分析レポート
+          ui_screens:
+            - /analytics/usage
+            - /monitoring/performance
+          linked_modules:
+            - features/analytics/usage
+            - features/monitoring/performance
+          version: v1.0
+          priority: 2
+          status: TODO
+          backbone_x_version_sort: 1
+        - id: ST-BACKUP-DR-001
+          story: As an 組織管理者, I want データ保護機能, So that 事業継続性を確保できる
+          backbone_id: BB-13
+          acceptance_criteria:
+            - 自動バックアップ機能
+            - ポイントインタイム復旧
+            - データエクスポート機能
+            - 災害復旧計画
+          ui_screens:
+            - /admin/backup
+            - /admin/disaster-recovery
+          linked_modules:
+            - features/backup/automated
+            - features/recovery/point-in-time
+          version: v2.0
+          priority: 3
+          status: TODO
+          backbone_x_version_sort: 1
+  mvp_release_plan:
+    mvp:
+      priority_1_stories:
+        - ST-ORG-001
+        - ST-ORG-002
+        - ST-ORG-NEW-001
+        - ST-PRJ-001
+        - ST-WF-001
+        - ST-WF-002
+        - ST-AUTH-001
+        - ST-ACT-001
+      priority_2_stories:
+        - ST-ORG-003
+        - ST-ORG-UI-001
+        - ST-ORG-LIST-001
+        - ST-TEAM-001
+        - ST-TEAM-ROLE-001
+        - ST-PRJ-002
+        - ST-PRJ-SEARCH-001
+        - ST-PRJ-UPDATE-001
+        - ST-PRJ-DELETE-001
+        - ST-WF-003
+        - ST-WF-IMP-001
+        - ST-WF-HIST-001
+        - ST-WF-SEARCH-001
+        - ST-WF-TPL-001
+        - ST-WF-AUTO-001
+        - ST-CB-001
+        - ST-CB-002
+        - ST-CB-OPS-001
+        - ST-CB-DND-001
+        - ST-CHAT-001
+        - ST-CHAT-HIST-001
+        - ST-AUTH-002
+        - ST-SESSION-001
+      cross_persona_stories:
+        - CST-WF-PORTABILITY
+        - CST-UX-PERF-001
+        - CST-ERROR-001
+      total_stories: 32
+      implementation_period: 1-4ヶ月
+  cross_persona_stories:
+    - id: CST-WF-PORTABILITY
+      story: As 全ユーザー, I want ワークフローのポータビリティ, So that 環境間で共有・移行が容易になる
+      backbone_id: BB-08
+      acceptance_criteria:
+        - YAMLでのエクスポート/インポート互換
+        - バージョン差異の検出と警告
+        - 不足リソース時のリカバリー手順提示
+      status: DONE
+      backbone_x_version_sort: 2
+    - id: CST-UX-PERF-001
+      story: As 全ユーザー, I want 主要画面のパフォーマンス最適化, So that 快適に利用できる
+      backbone_id: BB-12
+      acceptance_criteria:
+        - remote.tsを用いた遅延ロードで初期描画高速化
+        - 不要時は重いコンポーネントを読み込まない
+        - LCP/INPなどのメトリクスが目標を満たす
+      status: DONE
+      backbone_x_version_sort: 1
+    - id: CST-ERROR-001
+      story: As 全ユーザー, I want 共通エラーハンドリング, So that 失敗時も分かりやすく安全に復旧できる
+      backbone_id: BB-12
+      acceptance_criteria:
+        - errorsモジュールで例外を型安全に扱い、UIでは一貫したトースト/ダイアログ表示
+        - 致命的エラーはセッション保護と再ログイン誘導
+        - フォームエラーはフィールド単位に表示
+      status: DONE
+      backbone_x_version_sort: 2
+  success_metrics_by_story:
+    ST-ORG-001:
+      metric: チーム作成成功率・切替反映までの時間
+      measurement: 作成API成功率・UI反映遅延
+    ST-PRJ-001:
+      metric: 作成から一覧反映までの時間・利用率
+      measurement: 作成ワークフロー成功率・一覧表示件数
+    ST-WF-001:
+      metric: ワークフロー実行成功率・失敗時の復旧時間
+      measurement: 実行ログ・エラー率・平均実行時間
+    ST-CB-001:
+      metric: アップロード成功率・参照回数
+      measurement: ファイル操作ログ・Chat参照回数
+    ST-ORG-002:
+      metric: 組織切替成功率・反映遅延
+      measurement: /api/set-active-organization成功率・UI更新までの時間
+    ST-ORG-003:
+      metric: ダッシュボード表示成功率・主要指標の網羅性
+      measurement: ダッシュボードAPI成功率・ウィジェット表示数
+    ST-PRJ-002:
+      metric: プロジェクトダッシュボード表示成功率
+      measurement: 取得ワークフロー成功率・初期描画時間
+    ST-PRJ-SEARCH-001:
+      metric: 検索成功率・到達時間
+      measurement: 検索レスポンス・目標プロジェクト到達時間
+    ST-WF-002:
+      metric: 編集成功率・無効設定検出率
+      measurement: 保存成功/失敗数・検証エラー件数
+    ST-WF-003:
+      metric: 新規作成成功率・一覧反映時間
+      measurement: 作成API成功率・一覧更新遅延
+    ST-WF-SEARCH-001:
+      metric: 検索成功率・到達時間
+      measurement: 検索レスポンス・目標WF到達時間
+    ST-WF-TPL-001:
+      metric: テンプレ起点作成率・初期エラー率
+      measurement: 作成完了率・検証エラー件数
+    ST-CB-002:
+      metric: ファイル入出力成功率・結果再利用率
+      measurement: ノード実行成功率・参照回数
+    ST-CHAT-001:
+      metric: 文脈参照命中率・ユーザー満足度
+      measurement: 回答品質評価・会話継続率
+    ST-CHAT-HIST-001:
+      metric: 履歴再開成功率・継続時間
+      measurement: 再開成功率・平均セッション継続時間
+    ST-AUTH-001:
+      metric: Signup/Login成功率・初回到達時間
+      measurement: フォームエラー率・セッション確立時間
+    ST-AUTH-002:
+      metric: ログアウト成功率・セッション残留率
+      measurement: API成功率・保護ページアクセス失敗率
+    ST-ACT-001:
+      metric: アクティブ文脈切替成功率・反映遅延
+      measurement: API成功率・UI更新までの時間
+    ST-ORG-NEW-001:
+      metric: 組織作成成功率・初期遷移時間
+      measurement: 作成API成功率・ダッシュボード到達時間
+    ST-ORG-UI-001:
+      metric: 切替操作成功率・可視性満足度
+      measurement: 切替API成功率・ユーザー評価（UI）
+    ST-WF-IMP-001:
+      metric: インポート成功率・スキーマエラー検出率
+      measurement: 検証エラー件数・復旧までの手順時間
+    ST-WF-HIST-001:
+      metric: 履歴参照成功率・失敗時の再実行成功率
+      measurement: 履歴API成功率・リトライの成功/失敗率
+    ST-CB-OPS-001:
+      metric: ファイル操作成功率・データ整合性
+      measurement: 操作ログ成功率・参照リンク破綻率

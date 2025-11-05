@@ -5,6 +5,7 @@
 
 // idbライブラリをCDNから使用
 import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
+import FolderWatcher from './FolderWatcher.js';
 
 class FileManager {
   constructor() {
@@ -12,6 +13,7 @@ class FileManager {
     this.storeName = 'files';
     this.dbVersion = 1;
     this.db = null;
+    this.autoWriteBack = false; // 双方向同期モード
   }
 
   /**
@@ -36,138 +38,138 @@ class FileManager {
   }
 
   /**
+   * DBクローズ中エラー時の再試行ラッパ
+   */
+  async withDbRetry(fn) {
+    try {
+      await this.init();
+      return await fn();
+    } catch (e) {
+      const msg = (e && (e.message || e.toString())) || '';
+      if (msg.includes('database connection is closing') || msg.includes('The database connection is closing')) {
+        try {
+          // 再初期化して一度だけ再試行
+          this.db = null;
+          await this.init();
+          return await fn();
+        } catch (e2) {
+          throw e2;
+        }
+      }
+      throw e;
+    }
+  }
+
+  /**
    * ファイルの保存
-   * @param {Object} file - ファイルオブジェクト
-   * @param {string} file.name - ファイル名
-   * @param {string} file.content - YAMLコンテンツ
-   * @param {Object} file.parsedData - パース済みデータ
-   * @param {string} file.projectName - プロジェクト名
    */
   async saveFile(file) {
-    await this.init();
-    
-    const fileRecord = {
-      id: file.id || this.generateId(),
-      name: file.name,
-      content: file.content,
-      parsedData: file.parsedData,
-      projectName: file.projectName || this.extractProjectName(file.parsedData),
-      size: new Blob([file.content]).size,
-      createdAt: file.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      lastAccessed: new Date().toISOString()
+    const op = async () => {
+      const db = await this.init();
+      const fileRecord = {
+        id: file.id || this.generateId(),
+        name: file.name,
+        content: file.content,
+        parsedData: file.parsedData,
+        projectName: file.projectName || this.extractProjectName(file.parsedData),
+        size: new Blob([file.content]).size,
+        createdAt: file.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastAccessed: new Date().toISOString(),
+        localPath: file.localPath || null,
+        syncEnabled: !!file.syncEnabled
+      };
+      await db.put(this.storeName, fileRecord);
+      return fileRecord;
     };
-
-    await this.db.put(this.storeName, fileRecord);
-    return fileRecord;
+    return await this.withDbRetry(op);
   }
 
   /**
    * ファイルの取得
-   * @param {string} id - ファイルID
    */
   async getFile(id) {
-    await this.init();
-    const file = await this.db.get(this.storeName, id);
-    
-    if (file) {
-      // アクセス日時を更新
-      file.lastAccessed = new Date().toISOString();
-      await this.db.put(this.storeName, file);
-    }
-    
-    return file;
+    return await this.withDbRetry(async () => {
+      const db = await this.init();
+      const file = await db.get(this.storeName, id);
+      if (file) {
+        file.lastAccessed = new Date().toISOString();
+        await db.put(this.storeName, file);
+      }
+      return file;
+    });
   }
 
   /**
    * ファイル一覧の取得
-   * @param {Object} options - オプション
-   * @param {string} options.sortBy - ソート基準
-   * @param {string} options.order - ソート順序
    */
   async listFiles(options = {}) {
-    await this.init();
-    
     const { sortBy = 'updatedAt', order = 'desc' } = options;
-    const files = await this.db.getAllFromIndex(this.storeName, sortBy);
-    
-    // ソート順序の調整
-    if (order === 'desc') {
-      files.reverse();
-    }
-    
-    return files;
+    return await this.withDbRetry(async () => {
+      const db = await this.init();
+      const files = await db.getAllFromIndex(this.storeName, sortBy);
+      if (order === 'desc') files.reverse();
+      return files;
+    });
   }
 
   /**
    * ファイルの削除
-   * @param {string} id - ファイルID
    */
   async deleteFile(id) {
-    await this.init();
-    await this.db.delete(this.storeName, id);
+    return await this.withDbRetry(async () => {
+      const db = await this.init();
+      await db.delete(this.storeName, id);
+    });
   }
 
   /**
    * ファイルの更新
-   * @param {string} id - ファイルID
-   * @param {Object} updates - 更新内容
    */
   async updateFile(id, updates) {
-    await this.init();
-    
-    const file = await this.getFile(id);
-    if (!file) {
-      throw new Error(`File not found: ${id}`);
-    }
-
-    const updatedFile = {
-      ...file,
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-
-    await this.db.put(this.storeName, updatedFile);
-    return updatedFile;
+    return await this.withDbRetry(async () => {
+      const db = await this.init();
+      const file = await this.getFile(id);
+      if (!file) throw new Error(`File not found: ${id}`);
+      const updatedFile = { ...file, ...updates, updatedAt: new Date().toISOString() };
+      await db.put(this.storeName, updatedFile);
+      // 双方向同期（無効が既定）
+      try {
+        if (this.autoWriteBack && updatedFile.syncEnabled && updatedFile.localPath && typeof FolderWatcher !== 'undefined' && FolderWatcher.isWatching()) {
+          const yamlText = updatedFile.content || (updatedFile.parsedData ? window.jsyaml.dump(updatedFile.parsedData, { lineWidth: 120 }) : '');
+          if (yamlText) await FolderWatcher.writeFile(updatedFile.localPath, yamlText);
+        }
+      } catch (e) { console.error('Auto write-back failed:', e); }
+      return updatedFile;
+    });
   }
 
   /**
    * プロジェクト名でファイルを検索
-   * @param {string} projectName - プロジェクト名
    */
   async findByProject(projectName) {
-    await this.init();
-    
-    const index = this.db.transaction(this.storeName).store.index('projectName');
-    const files = await index.getAll(projectName);
-    
-    return files;
+    return await this.withDbRetry(async () => {
+      const db = await this.init();
+      const index = db.transaction(this.storeName).store.index('projectName');
+      return await index.getAll(projectName);
+    });
   }
 
   /**
    * ファイル名で検索
-   * @param {string} name - ファイル名（部分一致）
    */
   async searchByName(name) {
-    await this.init();
-    
     const allFiles = await this.listFiles();
     const searchTerm = name.toLowerCase();
-    
-    return allFiles.filter(file => 
-      file.name.toLowerCase().includes(searchTerm)
-    );
+    return allFiles.filter(file => file.name.toLowerCase().includes(searchTerm));
   }
 
   /**
    * ストレージ使用量の取得
    */
   async getStorageInfo() {
-    await this.init();
-    
     const files = await this.listFiles();
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-    
     return {
       fileCount: files.length,
       totalSize: totalSize,
@@ -179,8 +181,10 @@ class FileManager {
    * 全ファイルの削除
    */
   async clearAll() {
-    await this.init();
-    await this.db.clear(this.storeName);
+    return await this.withDbRetry(async () => {
+      const db = await this.init();
+      await db.clear(this.storeName);
+    });
   }
 
   /**
@@ -197,11 +201,8 @@ class FileManager {
     if (!parsedData || !parsedData.integrated_story_map) {
       return 'Unknown Project';
     }
-
     const storyMap = parsedData.integrated_story_map;
-    return storyMap.meta?.project_name || 
-           storyMap.project_info?.name || 
-           'Unknown Project';
+    return storyMap.meta?.project_name || storyMap.project_info?.name || 'Unknown Project';
   }
 
   /**
@@ -209,11 +210,7 @@ class FileManager {
    */
   async exportAllFiles() {
     const files = await this.listFiles();
-    return {
-      exportDate: new Date().toISOString(),
-      version: this.dbVersion,
-      files: files
-    };
+    return { exportDate: new Date().toISOString(), version: this.dbVersion, files };
   }
 
   /**
@@ -223,20 +220,10 @@ class FileManager {
     if (!exportData.files || !Array.isArray(exportData.files)) {
       throw new Error('Invalid export data format');
     }
-
     for (const file of exportData.files) {
-      // IDを再生成して保存
-      await this.saveFile({
-        ...file,
-        id: this.generateId(),
-        createdAt: file.createdAt || new Date().toISOString()
-      });
+      await this.saveFile({ ...file, id: this.generateId(), createdAt: file.createdAt || new Date().toISOString() });
     }
-
-    return {
-      imported: exportData.files.length,
-      timestamp: new Date().toISOString()
-    };
+    return { imported: exportData.files.length, timestamp: new Date().toISOString() };
   }
 }
 

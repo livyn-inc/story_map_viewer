@@ -1,0 +1,454 @@
+integrated_story_map:
+  meta:
+    created_date: "2025-09-16"
+    updated_date: "2025-09-17"
+    project: "Palma MVP0"
+    phase: "Discovery - ストーリーマップ"
+    description: "4ペルソナ統合ストーリーマップ・MVP優先度・リリース計画（受け入れテスト結果反映）"
+    version: "v2.0"
+    source: "ソリューションマップ（SL001-SL039）+ Opportunity仮説（FH001-FH020）+ 受け入れテスト結果（ST001-ST014）"
+    acceptance_test_status: "ST001,ST002,ST003,ST006,ST014: CONDITIONAL_PASS - Critical機能追加実装必要"
+  
+  personas_stories:
+    P001:
+      name: "田中 雅人"
+      role: "AI推進リーダー（戦略・管理二面性）"
+      mvp_priority_1:
+        - id: ST001
+          solution_ref: SL101
+          story: "As a AI推進リーダー, I want 複数AIツールを統合したプラットフォーム, So that 学習コスト50%削減・チーム効率化を実現できる"
+          acceptance_criteria:
+            - "Cursor・Dify・LayerX等の主要AIツールが単一UI内で利用可能"
+            - "ツール切り替え回数70%削減を実現"
+            - "新メンバーの学習時間50%短縮を達成"
+          release: "MVP"
+          ui_screens: ["SC000", "SC001", "SC005", "SC006"]
+          linked_problems: [PR101]
+          linked_hypotheses: [FH001]
+          # 受け入れテスト結果（2025-09-17）
+          acceptance_test_result: "CONDITIONAL_PASS"
+          product_value_score: "4/10"
+          persona_satisfaction_score: "3/10"
+          critical_missing_features:
+            - "T023_ST001_INTEGRATED_FILE_WORKFLOW_SYSTEM (8h)"
+            - "T024_ST001_NO_CODE_WORKFLOW_BUILDER_ENHANCEMENT (6h)"
+            - "T025_ST001_UNIFIED_CONTEXT_MANAGEMENT_SYSTEM (5h)"
+            - "T026_ST001_LEARNING_COST_REDUCTION_VALIDATION (5h)"
+          total_additional_hours: 24
+          
+        - id: ST002
+          solution_ref: SL104
+          story: "As a AI推進リーダー, I want セルフサービス型導入・運用システム, So that 人的サポートコスト80%削減・組織スケーラビリティを確保できる"
+          acceptance_criteria:
+            - "人的サポートなしでの導入成功率80%以上"
+            - "運用コスト80%削減を実現"
+            - "8名の部下PdMが自律的に利用可能"
+          release: "MVP"
+          linked_problems: [PR201]
+          linked_hypotheses: [FH002]
+          # 受け入れテスト結果（2025-09-17）
+          acceptance_test_result: "CONDITIONAL_PASS"
+          product_value_score: "4/10"
+          persona_satisfaction_score: "3/10"
+          critical_missing_features:
+            - "T030_ST002_SELF_SERVICE_ONBOARDING_SYSTEM (8h)"
+            - "T031_ST002_OPERATION_COST_MEASUREMENT (6h)"
+            - "T032_ST002_ORGANIZATIONAL_SELF_SERVICE_MANAGEMENT (5h)"
+            - "T033_ST002_STAGED_ROLLOUT_PROCESS_ENGINE (5h)"
+          total_additional_hours: 24
+          
+      mvp_priority_2:
+        - id: ST003
+          solution_ref: SL102
+          story: "As a AI推進リーダー, I want AI活用効果の自動測定・ROI可視化ダッシュボード, So that 経営層への説明・投資継続判断を支援できる"
+          acceptance_criteria:
+            - "AI活用効果の定量指標自動算出"
+            - "経営層向け説明資料自動生成"
+            - "投資継続率30%向上を実現"
+          release: "MVP"
+          ui_screens: ["SC004"]
+          linked_problems: [PR102]
+          linked_hypotheses: [FH004]
+          # 受け入れテスト結果（2025-09-17）
+          acceptance_test_result: "CONDITIONAL_PASS"
+          product_value_score: "4/10"
+          persona_satisfaction_score: "3/10"
+          critical_missing_features:
+            - "T040_ST003_ADVANCED_AI_EFFECTIVENESS_ENGINE (8h)"
+            - "T041_ST003_EXECUTIVE_ROI_VISUALIZATION (6h)"
+            - "T042_ST003_EXECUTIVE_REPORT_GENERATOR (6h)"
+            - "T043_ST003_INVESTMENT_CONTINUITY_VALIDATION (6h)"
+          total_additional_hours: 26
+          
+        - id: ST004
+          solution_ref: SL105
+          story: "As a AI推進リーダー, I want コンテキスト一元管理・サインオフ効率化, So that 手戻り削減・承認プロセス高速化を実現できる"
+          acceptance_criteria:
+            - "ステークホルダー合意形成時間50%短縮"
+            - "サインオフ遅延・曖昧な合意による手戻り80%削減"
+            - "承認フロー標準化・自動化"
+          release: "MVP"
+          linked_problems: [PR203]
+          linked_hypotheses: [FH003]
+          
+      mvp_priority_3:
+        - id: ST005
+          solution_ref: SL103
+          story: "As a AI推進リーダー, I want 人間-AI協働バランス最適化機能, So that 思考停止防止・創造性維持を実現できる"
+          acceptance_criteria:
+            - "適切な人間関与ポイントの自動提示"
+            - "AI依存による思考停止を防止"
+            - "アウトプット品質60%向上を実現"
+          release: "MVP"
+          linked_problems: [PR105]
+          linked_hypotheses: [FH018]
+          evidence_source: "ハッカソン参加者アンケート"
+          
+        - id: ST014
+          solution_ref: PR204
+          story: "As a AI推進リーダー, I want 承認フロー可視化・追跡管理, So that 承認状況の把握・ボトルネック解消を実現できる"
+          acceptance_criteria:
+            - "承認フローの可視化・リアルタイム追跡"
+            - "承認遅延アラート・エスカレーション"
+            - "承認履歴・監査証跡の自動保存"
+          release: "MVP"
+          linked_problems: [PR204]
+          linked_hypotheses: [FH022]
+          ui_components: ["承認管理UI"]
+          ui_screens: ["SC009"]
+          # 受け入れテスト結果（2025-09-17）
+          acceptance_test_result: "CONDITIONAL_PASS"
+          product_value_score: "4/10"
+          persona_satisfaction_score: "3/10"
+          critical_missing_features:
+            - "T060_ST014_REALTIME_APPROVAL_FLOW_VISUALIZATION (8h)"
+            - "T061_ST014_APPROVAL_DELAY_ALERT_SYSTEM (6h)"
+            - "T062_ST014_APPROVAL_BOTTLENECK_ANALYSIS_ENGINE (7h)"
+            - "T063_ST014_EXTERNAL_NOTIFICATION_INTEGRATION (5h)"
+          total_additional_hours: 26
+    
+    P003:
+      name: "山田 健太"
+      role: "現場PdM（田中さんの部下）"
+      mvp_priority_1:
+        - id: ST006
+          solution_ref: SL101
+          story: "As a 現場PdM, I want 統合タスク管理・優先順位自動化システム, So that 複数ツール切り替え不要・作業効率向上を実現できる"
+          acceptance_criteria:
+            - "複数ツール間のタスク統合管理"
+            - "優先順位自動判定・時間配分最適化"
+            - "割り込み業務への自動対応・調整"
+          release: "MVP"
+          linked_problems: [PR102]
+          linked_hypotheses: [FH001]
+          # 受け入れテスト結果（2025-09-17）
+          acceptance_test_result: "CONDITIONAL_PASS"
+          product_value_score: "4/10"
+          persona_satisfaction_score: "3/10"
+          critical_missing_features:
+            - "T050_ST006_INTEGRATED_TASK_MANAGEMENT_SYSTEM (8h)"
+            - "T051_ST006_AI_PRIORITY_OPTIMIZATION_ENGINE (6h)"
+            - "T052_ST006_INTERRUPT_AUTO_RESPONSE_SYSTEM (5h)"
+            - "T053_ST006_WORK_EFFICIENCY_VALIDATION (4h)"
+          total_additional_hours: 23
+          
+        - id: ST007
+          solution_ref: SL104
+          story: "As a 現場PdM, I want ステークホルダー合意・サインオフ効率化, So that 承認遅延解消・プロジェクト加速を実現できる"
+          acceptance_criteria:
+            - "ROI試算・説明資料自動生成"
+            - "経営層との仮説すり合わせ効率化"
+            - "田中さん（上司）への事前承認自動化"
+          release: "MVP"
+          linked_problems: [PR203]
+          linked_hypotheses: [FH004, FH010]
+          
+      mvp_priority_2:
+        - id: ST008
+          solution_ref: SL102
+          story: "As a 現場PdM, I want AIPMコマンド学習・活用支援システム, So that 企画書作成時間50%短縮・品質向上を実現できる"
+          acceptance_criteria:
+            - "思考フレームワーク（論点思考・MECE等）統合支援"
+            - "迅速な言語化作業支援"
+            - "ビジネス職特化UI/UX"
+          release: "MVP"
+          linked_problems: [PR201]
+          linked_hypotheses: [FH001, FH006]
+          
+        - id: ST015
+          solution_ref: PR103
+          story: "As a 現場PdM, I want 30秒価値体験・オンボーディング, So that 初回利用時の成功体験・継続意欲を獲得できる"
+          acceptance_criteria:
+            - "30秒での価値実感・マジックモーメント"
+            - "段階的な機能開示・学習パス"
+            - "成功体験の可視化・称賛"
+          release: "MVP"
+          linked_problems: [PR103]
+          linked_hypotheses: [FH021]
+          ui_components: ["SC002: 30秒価値体験"]
+          
+        - id: ST016
+          solution_ref: PR205
+          story: "As a 現場PdM, I want ファイルフロー統合・可視化, So that ファイルとワークフローの関連性明確化・再利用促進を実現できる"
+          acceptance_criteria:
+            - "ファイル入出力の可視化"
+            - "ワークフロー間のファイル連携"
+            - "過去ファイルの検索・再利用"
+          release: "MVP"
+          linked_problems: [PR205]
+          linked_hypotheses: [FH024]
+          ui_components: ["SC007: ファイルフロー統合"]
+          
+        - id: ST009
+          solution_ref: SL103
+          story: "As a 現場PdM, I want BigQuery統合・セルフサービス分析環境, So that データ分析敷居を下げ・分析精度向上を実現できる"
+          acceptance_criteria:
+            - "BigQueryクエリ自動生成"
+            - "統計分析・可視化自動化"
+            - "非エンジニア向けUI/UX"
+          release: "Release1"
+          linked_problems: [PR202]
+          linked_hypotheses: [FH002, FH006]
+    
+    P004:
+      name: "高橋 美咲"
+      role: "コンテンツ運用マネージャー（ROI重視）"
+      mvp_priority_1:
+        - id: ST010
+          solution_ref: SL101
+          story: "As a コンテンツ運用マネージャー, I want 大量コンテンツ戦略・ROI計画自動化, So that 月間制作量2-3倍・効率化を実現できる"
+          acceptance_criteria:
+            - "月間200-300記事の戦略自動策定"
+            - "コンテンツ別・ワーカー別ROI予測自動算出"
+            - "競合分析・市場調査自動化"
+          release: "MVP"
+          linked_problems: [PR101]
+          linked_hypotheses: [FH004, FH010]
+          
+        - id: ST011
+          solution_ref: SL104
+          story: "As a コンテンツ運用マネージャー, I want コンテンツROI測定・効果分析自動化, So that ROI即座測定・投資効果明確化を実現できる"
+          acceptance_criteria:
+            - "制作コスト・PV・コンバージョン統合分析"
+            - "投資対効果自動レポート生成"
+            - "効果測定工数80%削減"
+          release: "MVP"
+          linked_problems: [PR301]
+          linked_hypotheses: [FH004]
+          
+      mvp_priority_2:
+        - id: ST012
+          solution_ref: SL102
+          story: "As a コンテンツ運用マネージャー, I want 外部ワーカー品質管理・AI統合システム, So that リテイク率60%改善・品質均質化を実現できる"
+          acceptance_criteria:
+            - "AI校正・ファクトチェック・SEO最適化統合"
+            - "ブランドトーン・独自性自動評価"
+            - "リテイク率20-30%→5-10%削減"
+          release: "MVP"
+          linked_problems: [PR202]
+          linked_hypotheses: [FH006, FH002]
+          
+        - id: ST013
+          solution_ref: SL105
+          story: "As a コンテンツ運用マネージャー, I want AI-人間協働・品質管理バランス最適化, So that 創造性維持・ブランド価値確保を実現できる"
+          acceptance_criteria:
+            - "コンテンツ品質における人間関与ポイント最適化"
+            - "自動生成による創造性・独自性低下防止"
+            - "品質管理バランス自動調整"
+          release: "MVP"
+          linked_problems: [PR304]
+          linked_hypotheses: [FH018]
+          evidence_source: "ハッカソン参加者アンケート"
+          
+        - id: ST017
+          solution_ref: PR103
+          story: "As a コンテンツ運用マネージャー, I want 外部ワーカー管理・品質監視統合, So that ワーカー管理一元化・品質向上を実現できる"
+          acceptance_criteria:
+            - "外部ワーカー一覧・ステータス管理"
+            - "品質スコア・実績の可視化"
+            - "自動品質チェック・フィードバック"
+          release: "MVP"
+          linked_problems: [PR103]
+          linked_hypotheses: [FH023]
+          ui_components: ["外部ワーカー管理UI"]
+
+  cross_persona_stories:
+    - id: CST001
+      story: "As a 全ペルソナ, I want 統合UI/UXプラットフォーム, So that 複数AIツール学習コスト50%削減を実現できる"
+      target_solutions: [CSL001]
+      target_problems: [P001_PR101, P003_PR102, P003_PR201]
+      acceptance_criteria:
+        - "Cursor・Dify・LayerX等主要ツール統合"
+        - "単一UI内での一気通貫作業"
+        - "学習時間50%短縮・ツール切り替え70%削減"
+      release: "MVP"
+      linked_hypotheses: [FH001]
+      
+    - id: CST002
+      story: "As a 全ペルソナ, I want ROI可視化・効果測定統合システム, So that AI活用効果明確化・投資継続率30%向上を実現できる"
+      target_solutions: [CSL002]
+      target_problems: [P001_PR102, P002_PR101, P003_PR203, P004_PR101, P004_PR301]
+      acceptance_criteria:
+        - "AI活用効果の定量指標自動算出"
+        - "投資対効果の自動レポート生成"
+        - "経営層説明資料自動作成"
+      release: "MVP"
+      linked_hypotheses: [FH004]
+      
+    - id: CST003
+      story: "As a 全ペルソナ, I want 人間-AI協働最適化フレームワーク, So that 思考停止防止・品質管理バランス最適化を実現できる"
+      target_solutions: [CSL003]
+      target_problems: [P001_PR105, P004_PR304]
+      acceptance_criteria:
+        - "適切な人間関与ポイント自動提示"
+        - "AI依存による思考停止・創造性低下防止"
+        - "品質管理における人間-AI最適バランス"
+      release: "MVP"
+      linked_hypotheses: [FH018]
+      evidence_source: "ハッカソン参加者アンケート"
+      
+    - id: CST004
+      story: "As a 全ペルソナ（特にターシャリ）, I want Consumer Grade UI/UX, So that 技術知識不要・親しみやすい体験を実現できる"
+      target_solutions: [CSL001, CSL004]
+      target_problems: [P003_PR103, P003_PR201, P004_PR201]
+      acceptance_criteria:
+        - "メルカリ・LINE級の親しみやすさ"
+        - "専門用語排除・直感的操作"
+        - "即座価値実感・継続動機"
+      release: "MVP"
+      linked_hypotheses: [FH021]
+      ui_components: ["SC001: Consumer Gradeホーム"]
+
+  mvp_release_plan:
+    mvp:
+      priority_1_stories: [ST001, ST002, ST006, ST007, ST010, ST011]
+      priority_2_stories: [ST003, ST004, ST008, ST012, ST013, ST015, ST016, ST017]
+      priority_3_stories: [ST005, ST014]
+      cross_persona_stories: [CST001, CST002, CST003, CST004]
+      new_ui_stories: [ST014, ST015, ST016, ST017]  # 新規UI対応
+      total_stories: 18  # 更新: +6
+      implementation_period: "1-6ヶ月"
+      target_hypotheses: [FH001, FH002, FH003, FH004, FH018, FH021, FH022, FH023, FH024]
+      
+    release1:
+      stories: [ST009, "高優先度ストーリー群"]
+      implementation_period: "7-12ヶ月"
+      target_hypotheses: [FH005, FH006, FH007, FH015, FH017, FH020]
+      
+    release2:
+      stories: ["中優先度ストーリー群"]
+      implementation_period: "13-18ヶ月"
+      target_hypotheses: [FH008, FH009, FH013, FH014, FH016, FH019]
+
+  story_chain_traceability:
+    # A→PR→SL→STの完全トレーサビリティ
+    chain_001:
+      action: A101
+      problem: P001_PR101
+      solution: SL101
+      story: ST001
+      persona: P001
+      phase: PH1
+      hypothesis: FH001
+      
+    chain_002:
+      action: A103
+      problem: P001_PR102
+      solution: SL102
+      story: ST003
+      persona: P001
+      phase: PH1
+      hypothesis: FH004
+      
+    chain_003:
+      action: A103
+      problem: P003_PR102
+      solution: SL101
+      story: ST006
+      persona: P003
+      phase: PH1
+      hypothesis: FH001
+      
+    chain_004:
+      action: A204
+      problem: P003_PR203
+      solution: SL104
+      story: ST007
+      persona: P003
+      phase: PH2
+      hypothesis: FH004
+      
+    chain_005:
+      action: A101
+      problem: P004_PR101
+      solution: SL101
+      story: ST010
+      persona: P004
+      phase: PH1
+      hypothesis: FH004
+      
+    chain_006:
+      action: A301
+      problem: P004_PR301
+      solution: SL104
+      story: ST011
+      persona: P004
+      phase: PH3
+      hypothesis: FH004
+
+  implementation_sequence:
+    sprint_1:
+      stories: [CST001, CST002, CST004]
+      description: "統合プラットフォーム基盤・ROI可視化・Consumer Grade UI"
+      duration: "2週間"
+      
+    sprint_2:
+      stories: [ST001, ST002, ST006, ST010, ST015]
+      description: "各ペルソナ基本機能（統合UI/UX・セルフサービス型・30秒体験）"
+      duration: "4週間"
+      
+    sprint_3:
+      stories: [CST003, ST005, ST013, ST016]
+      description: "人間-AI協働最適化・品質管理バランス・ファイルフロー"
+      duration: "3週間"
+      
+    sprint_4:
+      stories: [ST003, ST004, ST007, ST011, ST014]
+      description: "ROI可視化・サインオフ効率化・効果測定・承認管理"
+      duration: "4週間"
+      
+    sprint_5:
+      stories: [ST008, ST012, ST017]
+      description: "学習支援・品質管理統合・外部ワーカー管理"
+      duration: "3週間"
+
+  success_metrics_by_story:
+    ST001:
+      metric: "学習時間50%短縮、ツール切り替え70%削減"
+      measurement: "新メンバー習得時間・ツール切り替え回数測定"
+      
+    ST002:
+      metric: "導入成功率80%、運用コスト80%削減"
+      measurement: "セルフサービス導入成功率・サポートコスト測定"
+      
+    ST003:
+      metric: "投資継続率30%向上、経営層説得成功率80%"
+      measurement: "ROI自動算出機能・投資継続率測定"
+      
+    ST010:
+      metric: "月間制作量2-3倍（200-300→400-600記事）"
+      measurement: "月間コンテンツ制作数・戦略策定時間測定"
+      
+    ST011:
+      metric: "ROI測定工数80%削減、効果可視化"
+      measurement: "ROI分析時間・投資効果レポート精度測定"
+      
+    ST013:
+      metric: "リテイク率60%改善（20-30%→5-10%）"
+      measurement: "外部ワーカー品質・リテイク率・品質スコア測定"
+
+
+
+
+
+

@@ -1,0 +1,507 @@
+integrated_story_map:
+  meta:
+    created_date: '2025-09-22'
+    project: Palma MVP1 Enhanced
+    phase: Discovery - ストーリーマップ拡張版
+    description: 既存32ストーリー + 新規15ストーリーの統合版
+    version: v3
+    source: 既存YAML + アイディア発散結果の統合
+    ui_options:
+      hide_priority_2: false
+      show_expansion_stories: true
+  
+  version_definitions:
+    order:
+      - MVP
+      - Release1
+      - Release2
+      - v1.0
+      - v2.0
+      - Future
+  
+  display_order:
+    backbones:
+    - BB-01  # 組織セットアップ
+    - BB-04  # プロジェクト作成
+    - BB-11  # ユーザー認証
+    - BB-02  # 組織切替・管理
+    - BB-05  # プロジェクト運用
+    - BB-06  # ワークフロー作成
+    - BB-09  # コンテキスト管理
+    - BB-10  # AI対話
+    - BB-07  # ワークフロー実行
+    - BB-08  # ワークフロー共有
+    - BB-03  # 組織ダッシュボード
+    - BB-12  # アクセス制御
+    - BB-13  # 高度分析・監視（新規）
+    - BB-14  # 外部統合・API（新規）
+    - BB-15  # モバイル・アクセシビリティ（新規）
+
+  story_map_structure:
+    activities:
+    - id: ACT-01
+      name: 組織運営
+      description: 組織・チームの設定と管理
+      users:
+      - 組織管理者
+      - 認証ユーザー
+    - id: ACT-02
+      name: プロジェクト管理
+      description: プロジェクトの作成と進行管理
+      users:
+      - プロジェクト利用者
+    - id: ACT-03
+      name: 業務自動化
+      description: ワークフローによる業務プロセスの自動化
+      users:
+      - プロジェクト利用者
+    - id: ACT-04
+      name: AI活用
+      description: AIを活用した分析と意思決定支援
+      users:
+      - AIアシスタント利用者
+    - id: ACT-05
+      name: 認証・セキュリティ
+      description: ユーザー認証とアクセス管理
+      users:
+      - 認証ユーザー
+      - 全ユーザー
+    - id: ACT-06
+      name: 統合・連携
+      description: 外部ツールとの統合とAPI提供
+      users:
+      - 開発者
+      - システム管理者
+    - id: ACT-07
+      name: 分析・監視
+      description: 利用状況分析と運用監視
+      users:
+      - 組織管理者
+      - システム管理者
+
+    backbones:
+    # 既存バックボーン（BB-01 ～ BB-12）
+    - id: BB-01
+      activity_id: ACT-01
+      name: 組織セットアップ
+      description: 組織・チームの初期設定
+      sequence: 1
+    - id: BB-02
+      activity_id: ACT-01
+      name: 組織切替・管理
+      description: 日常的な組織管理業務
+      sequence: 2
+    - id: BB-03
+      activity_id: ACT-01
+      name: 組織ダッシュボード
+      description: 組織の状況把握と分析
+      sequence: 3
+    - id: BB-04
+      activity_id: ACT-02
+      name: プロジェクト作成
+      description: 新規プロジェクトの立ち上げ
+      sequence: 1
+    - id: BB-05
+      activity_id: ACT-02
+      name: プロジェクト運用
+      description: プロジェクトの日常運用
+      sequence: 2
+    - id: BB-06
+      activity_id: ACT-03
+      name: ワークフロー作成
+      description: 新規ワークフローの設計
+      sequence: 1
+    - id: BB-07
+      activity_id: ACT-03
+      name: ワークフロー実行
+      description: ワークフローの実行と管理
+      sequence: 2
+    - id: BB-08
+      activity_id: ACT-03
+      name: ワークフロー共有
+      description: ワークフローの共有と再利用
+      sequence: 3
+    - id: BB-09
+      activity_id: ACT-04
+      name: コンテキスト管理
+      description: AIで使用するファイル管理
+      sequence: 1
+    - id: BB-10
+      activity_id: ACT-04
+      name: AI対話
+      description: AIとの対話による支援
+      sequence: 2
+    - id: BB-11
+      activity_id: ACT-05
+      name: ユーザー認証
+      description: ログイン・ログアウト管理
+      sequence: 1
+    - id: BB-12
+      activity_id: ACT-05
+      name: アクセス制御
+      description: 権限とコンテキスト管理
+      sequence: 2
+    
+    # 新規バックボーン
+    - id: BB-13
+      activity_id: ACT-07
+      name: 高度分析・監視
+      description: 利用状況分析と運用監視機能
+      sequence: 1
+    - id: BB-14
+      activity_id: ACT-06
+      name: 外部統合・API
+      description: 外部ツール統合とAPI提供
+      sequence: 1
+    - id: BB-15
+      activity_id: ACT-06
+      name: モバイル・アクセシビリティ
+      description: モバイル対応とアクセシビリティ向上
+      sequence: 2
+
+  # 既存ストーリーマッピング（ST-ORG-001 ～ ST-AUTH-002）は省略
+  # 新規ストーリーのマッピングのみ記載
+  story_mapping:
+    # 新規ストーリーのマッピング
+    ST-SEARCH-001:
+      backbone_id: BB-05
+      sequence: 10
+    ST-DASH-CUSTOM-001:
+      backbone_id: BB-03
+      sequence: 10
+    ST-AI-WF-OPT-001:
+      backbone_id: BB-07
+      sequence: 10
+    ST-AI-CTX-SMART-001:
+      backbone_id: BB-10
+      sequence: 10
+    ST-AI-DOC-AUTO-001:
+      backbone_id: BB-07
+      sequence: 11
+    ST-PERM-RBAC-001:
+      backbone_id: BB-12
+      sequence: 10
+    ST-COLLAB-EXT-001:
+      backbone_id: BB-08
+      sequence: 10
+    ST-INTEG-TOOLS-001:
+      backbone_id: BB-14
+      sequence: 1
+    ST-API-FULL-001:
+      backbone_id: BB-14
+      sequence: 2
+    ST-MOBILE-RESP-001:
+      backbone_id: BB-15
+      sequence: 1
+    ST-MONITOR-USAGE-001:
+      backbone_id: BB-13
+      sequence: 1
+    ST-BACKUP-DR-001:
+      backbone_id: BB-13
+      sequence: 2
+
+  # 新規ストーリー詳細定義
+  enhanced_stories:
+    P005:
+      name: システム管理者
+      role: 運用監視・統合管理
+      stories:
+      - id: ST-SEARCH-001
+        story: As a 全ユーザー, I want 横断的な全文検索, So that 必要な情報を素早く見つけられる
+        backbone_id: BB-05
+        acceptance_criteria:
+        - ファイル内容・メタデータの全文検索が可能
+        - 検索結果のファセット分類（プロジェクト、日付、タイプ別）
+        - 検索履歴とお気に入り機能
+        - 権限に応じた検索結果フィルタリング
+        ui_screens:
+        - /search
+        - グローバル検索バー
+        linked_modules:
+        - features/search
+        - features/indexing
+        version: Release1
+        priority: 1
+        
+      - id: ST-DASH-CUSTOM-001
+        story: As a 全ユーザー, I want 個人用ダッシュボード, So that 自分の作業に最適化された情報を得られる
+        backbone_id: BB-03
+        acceptance_criteria:
+        - ウィジェット配置のドラッグ&ドロップカスタマイズ
+        - 個人KPIトラッキング設定
+        - 通知センター統合
+        - ショートカット機能
+        ui_screens:
+        - /(dashboard)/personal
+        - /settings/dashboard
+        linked_modules:
+        - features/dashboard/personal
+        - features/widgets
+        version: Release1
+        priority: 2
+        
+      - id: ST-AI-WF-OPT-001
+        story: As a プロジェクト利用者, I want AIによるワークフロー最適化提案, So that 効率的な手順を自動発見できる
+        backbone_id: BB-07
+        acceptance_criteria:
+        - 実行履歴からのパターン分析エンジン
+        - ボトルネック自動検出とアラート
+        - 最適化提案の具体的な改善案提示
+        - A/Bテスト機能による効果測定
+        ui_screens:
+        - /project/[projectId]/workflow/[workflowId]/optimize
+        - /analytics/workflow-performance
+        linked_modules:
+        - features/ai/workflow-optimizer
+        - features/analytics/performance
+        version: v1.0
+        priority: 1
+        
+      - id: ST-AI-CTX-SMART-001
+        story: As a AIアシスタント利用者, I want プロジェクト全体を理解するAI, So that より的確な支援を受けられる
+        backbone_id: BB-10
+        acceptance_criteria:
+        - プロジェクト履歴の自動学習機能
+        - 関連ファイル自動推薦エンジン
+        - ユーザー意図予測機能
+        - 専門用語辞書の自動構築・更新
+        ui_screens:
+        - Chat（拡張版）
+        - /project/[projectId]/ai-insights
+        linked_modules:
+        - features/ai/context-understanding
+        - features/ai/intent-prediction
+        version: v1.0
+        priority: 2
+        
+      - id: ST-AI-DOC-AUTO-001
+        story: As a プロジェクト利用者, I want ワークフロー実行から自動でドキュメント生成, So that 手動作業を削減できる
+        backbone_id: BB-07
+        acceptance_criteria:
+        - 実行ログからの手順書自動生成
+        - 結果サマリーの自動作成
+        - 改善提案レポートの生成
+        - 多言語対応（日英）
+        ui_screens:
+        - /project/[projectId]/workflow/[workflowId]/documentation
+        - /project/[projectId]/reports
+        linked_modules:
+        - features/ai/document-generator
+        - features/reports/auto-generation
+        version: v2.0
+        priority: 3
+
+    P006:
+      name: 開発者・システム管理者
+      role: 統合・API・運用監視
+      stories:
+      - id: ST-PERM-RBAC-001
+        story: As an 組織管理者, I want 細かい権限設定, So that セキュリティを保ちながら柔軟な運用ができる
+        backbone_id: BB-12
+        acceptance_criteria:
+        - ロールベースアクセス制御（RBAC）の実装
+        - プロジェクト単位の権限継承設定
+        - 一時的権限付与（期限付き）機能
+        - 監査ログ機能
+        ui_screens:
+        - /organization/permissions
+        - /project/[projectId]/access-control
+        linked_modules:
+        - features/auth/rbac
+        - features/audit/logging
+        version: Release1
+        priority: 3
+        
+      - id: ST-COLLAB-EXT-001
+        story: As a プロジェクト利用者, I want 外部組織との安全な共有, So that パートナーと効率的に協働できる
+        backbone_id: BB-08
+        acceptance_criteria:
+        - ゲストアクセス機能（期限付き）
+        - 共有プロジェクト管理機能
+        - 外部API連携（Slack, Teams等）
+        - 共有リンク生成（期限・権限設定）
+        ui_screens:
+        - /project/[projectId]/sharing
+        - /collaboration/external
+        linked_modules:
+        - features/collaboration/external
+        - features/sharing/secure-links
+        version: Release2
+        priority: 2
+        
+      - id: ST-INTEG-TOOLS-001
+        story: As a プロジェクト利用者, I want 既存ツールとの連携, So that 既存ワークフローを活かせる
+        backbone_id: BB-14
+        acceptance_criteria:
+        - GitHub/GitLab連携（リポジトリ同期）
+        - Jira/Linear連携（チケット管理）
+        - Google Workspace/Microsoft 365統合
+        - Zapier/Make.com統合
+        ui_screens:
+        - /integrations
+        - /project/[projectId]/integrations
+        linked_modules:
+        - features/integrations/github
+        - features/integrations/jira
+        - features/integrations/workspace
+        version: Release2
+        priority: 1
+        
+      - id: ST-API-FULL-001
+        story: As a 開発者, I want 豊富なAPI, So that カスタム統合を構築できる
+        backbone_id: BB-14
+        acceptance_criteria:
+        - RESTful API完全提供
+        - Webhook設定機能
+        - API認証・レート制限
+        - SDK提供（JavaScript, Python）
+        ui_screens:
+        - /developer/api-docs
+        - /developer/webhooks
+        linked_modules:
+        - api/v1/*
+        - sdk/javascript
+        - sdk/python
+        version: v2.0
+        priority: 2
+        
+      - id: ST-MOBILE-RESP-001
+        story: As a 全ユーザー, I want モバイルでの快適な操作, So that 場所を選ばず作業できる
+        backbone_id: BB-15
+        acceptance_criteria:
+        - レスポンシブデザイン最適化
+        - オフライン機能（基本操作）
+        - プッシュ通知対応
+        - 音声入力対応
+        ui_screens:
+        - 全画面（モバイル最適化）
+        linked_modules:
+        - features/mobile/responsive
+        - features/mobile/offline
+        - features/mobile/notifications
+        version: v1.0
+        priority: 3
+        
+      - id: ST-MONITOR-USAGE-001
+        story: As an 組織管理者, I want 利用状況の詳細分析, So that 運用改善と投資判断ができる
+        backbone_id: BB-13
+        acceptance_criteria:
+        - 利用統計ダッシュボード
+        - パフォーマンス監視機能
+        - エラー追跡・アラート機能
+        - コスト分析レポート
+        ui_screens:
+        - /analytics/usage
+        - /monitoring/performance
+        linked_modules:
+        - features/analytics/usage
+        - features/monitoring/performance
+        version: v1.0
+        priority: 2
+        
+      - id: ST-BACKUP-DR-001
+        story: As an 組織管理者, I want データ保護機能, So that 事業継続性を確保できる
+        backbone_id: BB-13
+        acceptance_criteria:
+        - 自動バックアップ機能
+        - ポイントインタイム復旧
+        - データエクスポート機能
+        - 災害復旧計画
+        ui_screens:
+        - /admin/backup
+        - /admin/disaster-recovery
+        linked_modules:
+        - features/backup/automated
+        - features/recovery/point-in-time
+        version: v2.0
+        priority: 3
+
+  # 拡張版リリース計画
+  enhanced_release_plan:
+    mvp:
+      priority_1_stories:
+      # 既存MVP Priority1 (8ストーリー)
+      - ST-ORG-001
+      - ST-ORG-NEW-001
+      - ST-PRJ-001
+      - ST-WF-001
+      - ST-AUTH-001
+      total_stories: 8
+      
+    release1:
+      priority_1_stories:
+      # 既存Release1候補 + 新規高優先度
+      - ST-SEARCH-001      # 新規：横断検索
+      - ST-INTEG-TOOLS-001 # 新規：外部ツール統合
+      priority_2_stories:
+      - ST-DASH-CUSTOM-001 # 新規：カスタムダッシュボード
+      - ST-COLLAB-EXT-001  # 新規：外部コラボレーション
+      priority_3_stories:
+      - ST-PERM-RBAC-001   # 新規：高度権限管理
+      - ST-MOBILE-RESP-001 # 新規：モバイル対応
+      total_new_stories: 6
+      
+    v1_0:
+      priority_1_stories:
+      - ST-AI-WF-OPT-001   # 新規：AI最適化
+      priority_2_stories:
+      - ST-AI-CTX-SMART-001 # 新規：コンテキストAI
+      - ST-MONITOR-USAGE-001 # 新規：利用分析
+      priority_3_stories:
+      - ST-MOBILE-RESP-001 # 新規：モバイル対応
+      total_new_stories: 4
+      
+    v2_0:
+      priority_2_stories:
+      - ST-API-FULL-001    # 新規：完全API
+      priority_3_stories:
+      - ST-AI-DOC-AUTO-001 # 新規：自動ドキュメント
+      - ST-BACKUP-DR-001   # 新規：バックアップ
+      total_new_stories: 3
+
+  # 実装優先度マトリックス
+  implementation_matrix:
+    quick_wins: # 高価値 × 低コスト
+      - ST-SEARCH-001
+      - ST-DASH-CUSTOM-001
+      - ST-MOBILE-RESP-001
+    major_projects: # 高価値 × 高コスト
+      - ST-AI-WF-OPT-001
+      - ST-AI-CTX-SMART-001
+      - ST-INTEG-TOOLS-001
+    fill_ins: # 低価値 × 低コスト
+      - ST-PERM-RBAC-001
+      - ST-MONITOR-USAGE-001
+    questionable: # 低価値 × 高コスト
+      - ST-BACKUP-DR-001
+      - ST-API-FULL-001
+
+  # 成功指標
+  enhanced_success_metrics:
+    ST-SEARCH-001:
+      metric: 検索成功率・平均検索時間
+      measurement: 目標情報到達率・検索→アクション時間
+    ST-AI-WF-OPT-001:
+      metric: ワークフロー効率改善率・提案採用率
+      measurement: 実行時間短縮率・AI提案の実装率
+    ST-INTEG-TOOLS-001:
+      metric: 外部ツール連携成功率・データ同期精度
+      measurement: API連携成功率・データ整合性
+    ST-DASH-CUSTOM-001:
+      metric: ダッシュボード利用率・カスタマイズ率
+      measurement: 日次アクセス率・ウィジェット変更頻度
+
+  # 技術的考慮事項
+  technical_considerations:
+    scalability:
+      - 検索インデックス設計（Elasticsearch等）
+      - AI処理の非同期化・キューイング
+      - 外部API統合のレート制限対応
+    security:
+      - RBAC実装のデータベース設計
+      - 外部共有時のセキュリティ境界
+      - API認証・認可の統一設計
+    performance:
+      - モバイル対応のパフォーマンス最適化
+      - リアルタイム分析のデータ処理
+      - 大量データのバックアップ戦略

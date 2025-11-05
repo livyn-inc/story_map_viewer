@@ -196,6 +196,14 @@ class EditableStoryCard extends HTMLElement {
           background: #cbd5e0;
         }
 
+        .btn-delete {
+          background: #fed7d7;
+          color: #c53030;
+        }
+        .btn-delete:hover {
+          background: #feb2b2;
+        }
+
         .acceptance-list {
           list-style: none;
           margin: 0;
@@ -305,11 +313,35 @@ class EditableStoryCard extends HTMLElement {
             </div>
             <div style="flex: 1;">
               <label class="form-label">バージョン</label>
-              <input type="text" class="form-input" name="version" value="${this.originalData.version || 'MVP'}">
+              <select class="form-input" name="version">
+                ${(window.__storyMapVersionOrder__ || ['MVP']).map(v => `
+                  <option value="${v}" ${v === (this.originalData.version || 'MVP') ? 'selected' : ''}>${v}</option>
+                `).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="display: flex; gap: 12px;">
+            <div style="flex: 1;">
+              <label class="form-label">ステータス</label>
+              <select class="form-input" name="status">
+                ${['TODO','IN_PROGRESS','REVIEW','DONE','CANCELLED'].map(s => `
+                  <option value="${s}" ${s === (this.originalData.status || 'TODO') ? 'selected' : ''}>${s}</option>
+                `).join('')}
+              </select>
+            </div>
+            <div style="flex: 1;">
+              <label class="form-label">バックボーン</label>
+              <select class="form-input" name="backbone_id">
+                ${(window.__storyMapBackbones__ || []).map(b => `
+                  <option value="${b.id}" ${b.id === (this.originalData.backbone_id || '') ? 'selected' : ''}>${b.name}</option>
+                `).join('')}
+              </select>
             </div>
           </div>
           
           <div class="form-actions">
+            <button type="button" class="btn btn-delete">削除</button>
             <button type="button" class="btn btn-cancel">キャンセル</button>
             <button type="submit" class="btn btn-save">保存</button>
           </div>
@@ -337,6 +369,7 @@ class EditableStoryCard extends HTMLElement {
     const form = this.shadowRoot.querySelector('form');
     const cancelBtn = this.shadowRoot.querySelector('.btn-cancel');
     const addBtn = this.shadowRoot.querySelector('.btn-add');
+    const deleteBtn = this.shadowRoot.querySelector('.btn-delete');
     
     // カードクリックで編集モード
     card.addEventListener('click', (e) => {
@@ -354,7 +387,26 @@ class EditableStoryCard extends HTMLElement {
     // キャンセル
     cancelBtn.addEventListener('click', () => {
       this.exitEditMode();
+      try {
+        this.dispatchEvent(new CustomEvent('editor-cancel', { bubbles: true, composed: true }));
+      } catch {}
     });
+
+    // 削除
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const ok = confirm('このストーリーを削除しますか？');
+        if (!ok) return;
+        try {
+          console.log('[INLINE] dispatch storyDelete for', this.originalData?.id);
+          this.dispatchEvent(new CustomEvent('storyDelete', { bubbles: true, composed: true, detail: { storyId: this.originalData.id } }));
+          // 念のためグローバルにも通知
+          window.dispatchEvent(new CustomEvent('storyDelete', { detail: { storyId: this.originalData.id } }));
+        } catch {}
+      });
+    }
     
     // 受け入れ条件の追加
     addBtn.addEventListener('click', () => {
@@ -421,6 +473,8 @@ class EditableStoryCard extends HTMLElement {
       soThat: soThat || null,
       priority: parseInt(formData.get('priority')),
       version: formData.get('version'),
+      status: formData.get('status') || this.originalData.status || 'TODO',
+      backbone_id: formData.get('backbone_id') || this.originalData.backbone_id,
       acceptance_criteria: acceptanceCriteria,
       personaKey: formData.get('personaKey') || this.originalData.personaKey
     };
@@ -429,6 +483,9 @@ class EditableStoryCard extends HTMLElement {
     if (this.changeCallback) {
       this.changeCallback(updatedData);
     }
+    try {
+      this.dispatchEvent(new CustomEvent('editor-saved', { bubbles: true, composed: true, detail: { updatedData } }));
+    } catch {}
     
     // データを更新して表示モードに戻る（ペルソナ名称も即時反映）
     this.originalData = {

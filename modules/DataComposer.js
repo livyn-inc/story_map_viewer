@@ -65,12 +65,22 @@ class DataComposer {
         }
         
         // ストーリーのグリッド配置（Versionごとにグループ化し、水平スライスを引けるように）
-        const { rows, slices } = this._arrangeStoriesInGridByVersion(allStories, columns.length);
+        const { rows, slices } = this._arrangeStoriesInGridByVersion(allStories, columns.length, data.integrated_story_map?.story_mapping || {});
         
         console.log(`DataComposer: Total columns = ${columns.length}`);
         // 編集用に全ペルソナ候補をグローバルへ渡す（key/nameの配列）
         try {
             window.__storyMapPersonas__ = Object.entries(storyMap.personas_stories).map(([key, p]) => ({ key, name: p.name }));
+            // バージョン選択肢
+            const orderFromYaml = (typeof DataComposer._lastYaml === 'object' &&
+                Array.isArray(DataComposer._lastYaml.integrated_story_map?.version_definitions?.order))
+                ? DataComposer._lastYaml.integrated_story_map.version_definitions.order
+                : ['MVP', 'Release1', 'Release2', 'v1.0', 'v2.0', 'Future'];
+            window.__storyMapVersionOrder__ = orderFromYaml;
+            // バックボーン選択肢
+            window.__storyMapBackbones__ = columns.map(b => ({ id: b.id, name: b.name }));
+            // アクティビティ選択肢
+            window.__storyMapActivities__ = (structure.activities || []).map(a => ({ id: a.id, name: a.name }));
         } catch {}
         return {
             columns,
@@ -85,7 +95,7 @@ class DataComposer {
      * ストーリーをグリッドに配置（重複を避ける）
      * @private
      */
-    static _arrangeStoriesInGridByVersion(stories, columnCount) {
+    static _arrangeStoriesInGridByVersion(stories, columnCount, storyMapping) {
         const rows = [];
         const slices = []; // 区切り線を挿入するrowIndexの配列（先頭行は含めない）
 
@@ -116,6 +126,12 @@ class DataComposer {
                 .filter(s => (s.version || 'MVP') === version)
                 .sort((a, b) => {
                     if (a.colIndex !== b.colIndex) return a.colIndex - b.colIndex;
+                    // 同一列内は backbone_x_version_sort → story_mapping.sequence → id
+                    const aMap = storyMapping?.[a.id] || {};
+                    const bMap = storyMapping?.[b.id] || {};
+                    const aKey = (typeof a.backbone_x_version_sort === 'number') ? a.backbone_x_version_sort : (typeof aMap.sequence === 'number' ? aMap.sequence : Number.MAX_SAFE_INTEGER);
+                    const bKey = (typeof b.backbone_x_version_sort === 'number') ? b.backbone_x_version_sort : (typeof bMap.sequence === 'number' ? bMap.sequence : Number.MAX_SAFE_INTEGER);
+                    if (aKey !== bKey) return aKey - bKey;
                     return a.id.localeCompare(b.id);
                 });
 

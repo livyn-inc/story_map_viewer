@@ -9,6 +9,7 @@ class FileUploader {
   constructor() {
     this.dropZone = null;
     this.fileInput = null;
+    this.dirInput = null;
     this.uploadCallback = null;
     this.errorCallback = null;
   }
@@ -46,6 +47,15 @@ class FileUploader {
     this.fileInput.style.display = 'none';
     
     document.body.appendChild(this.fileInput);
+
+    // フォルダ選択（webkitdirectoryでディレクトリ内全YAML取り込み）
+    this.dirInput = document.createElement('input');
+    this.dirInput.type = 'file';
+    this.dirInput.setAttribute('webkitdirectory', '');
+    this.dirInput.setAttribute('directory', '');
+    this.dirInput.multiple = true;
+    this.dirInput.style.display = 'none';
+    document.body.appendChild(this.dirInput);
   }
 
   /**
@@ -58,10 +68,19 @@ class FileUploader {
     this.dropZone.addEventListener('drop', this.handleDrop.bind(this));
     
     // クリックでファイル選択
-    this.dropZone.addEventListener('click', () => this.fileInput.click());
+    this.dropZone.addEventListener('click', (e) => {
+      // シフトクリックでフォルダ、通常クリックでファイル
+      if (e.shiftKey) {
+        this.dirInput.click();
+      } else {
+        this.fileInput.click();
+      }
+    });
     
     // ファイル選択イベント
     this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+    // フォルダ選択イベント
+    this.dirInput.addEventListener('change', this.handleDirectorySelect.bind(this));
   }
 
   /**
@@ -114,6 +133,15 @@ class FileUploader {
   }
 
   /**
+   * フォルダ選択ハンドラー
+   */
+  handleDirectorySelect(e) {
+    const files = Array.from(e.target.files);
+    this.processFiles(files);
+    this.dirInput.value = '';
+  }
+
+  /**
    * ファイルの処理
    */
   async processFiles(files) {
@@ -137,6 +165,8 @@ class FileUploader {
         this.handleError(`${file.name}: ${error.message}`);
       }
     }
+
+    // フォルダ同期・自動リンク化は廃止。以後はユーザーの明示的なSAVE/LOADのみで扱う。
   }
 
   /**
@@ -158,7 +188,9 @@ class FileUploader {
         name: file.name,
         content: content,
         parsedData: parsedData,
-        size: file.size
+        size: file.size,
+        // localPathはファイル名を保持（フォルダ連携はしない）
+        localPath: file.name
       });
 
       // 成功コールバック
@@ -168,6 +200,7 @@ class FileUploader {
 
       this.hideProgress();
       this.showSuccess(`${file.name} をアップロードしました`);
+      return savedFile;
 
     } catch (error) {
       this.hideProgress();
@@ -268,7 +301,7 @@ class FileUploader {
         <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <h3>YAMLファイルをドロップ</h3>
-      <p>または、クリックしてファイルを選択</p>
+      <p>クリックでファイル選択（Shift+クリックでフォルダ選択）</p>
       <span class="file-types">対応形式: .yaml, .yml</span>
     `;
     

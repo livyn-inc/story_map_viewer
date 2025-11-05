@@ -94,3 +94,4 @@ integrated_story_map:
 - Flow/<YYYYMM>/<YYYY-MM-DD>/<Project>/3_discovery/04_ストーリーマップ/integrated_story_map_draft.yaml
 
 
+

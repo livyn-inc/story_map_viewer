@@ -4,6 +4,7 @@
  */
 
 import FileManager from './FileManager.js';
+import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
 // js-yamlはグローバル変数として使用
 
 class FolderWatcher {
@@ -14,6 +15,10 @@ class FolderWatcher {
     this.changeCallback = null;
     this.errorCallback = null;
     this.isSupported = this.checkSupport();
+    // 永続化用（ハンドルの保持）
+    this.persistDb = null;
+    this.persistDbName = 'StoryMapViewerSettings';
+    this.persistStore = 'kv';
   }
 
   /**
@@ -36,6 +41,8 @@ class FolderWatcher {
 
     this.changeCallback = onChange;
     this.errorCallback = onError;
+    // 永続DBを準備
+    this._openPersistDb();
     return true;
   }
 
@@ -46,12 +53,15 @@ class FolderWatcher {
     try {
       // フォルダ選択ダイアログ
       this.directoryHandle = await window.showDirectoryPicker({
-        mode: 'read'
+        mode: 'readwrite'
       });
 
       // 初回スキャン
       await this.scanDirectory();
       
+      // ハンドルを永続化
+      await this._persistHandle('dirHandle', this.directoryHandle);
+
       // 監視開始
       this.startWatching();
 
@@ -66,6 +76,27 @@ class FolderWatcher {
         return null;
       }
       throw error;
+    }
+  }
+
+  /**
+   * 可能なら前回のディレクトリハンドルを復元
+   */
+  async restoreIfPossible() {
+    try {
+      const rec = await this._loadPersisted('dirHandle');
+      if (!rec) return false;
+      const handle = rec;
+      // 権限確認
+      const ok = await this._verifyRWPermission(handle);
+      if (!ok) return false;
+      this.directoryHandle = handle;
+      await this.scanDirectory();
+      this.startWatching();
+      return true;
+    } catch (e) {
+      console.warn('Folder restore failed:', e?.message || e);
+      return false;
     }
   }
 
@@ -262,12 +293,117 @@ class FolderWatcher {
   }
 
   /**
+   * ローカルファイルへ書き戻し
+   * @param {string} path - 監視下の相対パス
+   * @param {string} content - 書き込むテキスト（YAML）
+   */
+  async writeFile(path, content) {
+    if (!this.directoryHandle) throw new Error('No directory selected');
+    const info = this.fileMap.get(path);
+    if (!info || !info.handle) throw new Error(`Handle not found for ${path}`);
+    try {
+      const writable = await info.handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      info.lastModified = Date.now();
+    } catch (e) {
+      console.error('writeFile error:', e);
+      throw e;
+    }
+  }
+
+  /**
+   * 内部ユーティリティ: 親ディレクトリハンドル
+   */
+  async _getParentDirectoryHandle(path) {
+    if (!this.directoryHandle) throw new Error('No directory selected');
+    const parts = path.split('/');
+    parts.pop();
+    let dir = this.directoryHandle;
+    for (const seg of parts) {
+      if (!seg) continue;
+      dir = await dir.getDirectoryHandle(seg, { create: false });
+    }
+    return dir;
+  }
+
+  /**
+   * バックアップを作成してから上書き保存
+   */
+  async backupAndWrite(path, content) {
+    if (!this.directoryHandle) throw new Error('No directory selected');
+    const info = this.fileMap.get(path);
+    if (!info || !info.handle) throw new Error(`Handle not found for ${path}`);
+    const file = await info.handle.getFile();
+    const original = await file.text();
+
+    const parent = await this._getParentDirectoryHandle(path);
+    const base = path.split('/').pop();
+    const ts = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const stamp = `${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}${pad(ts.getSeconds())}`;
+    const dot = base.lastIndexOf('.');
+    const name = dot > 0 ? base.substring(0, dot) : base;
+    const backupDir = await parent.getDirectoryHandle('backup', { create: true });
+    const backupName = `${name}_${stamp}.bak`;
+
+    // バックアップ作成（backup/配下、拡張子 .bak）
+    const backupHandle = await backupDir.getFileHandle(backupName, { create: true });
+    const w1 = await backupHandle.createWritable();
+    await w1.write(original);
+    await w1.close();
+
+    // 本体上書き
+    const writable = await info.handle.createWritable();
+    await writable.write(content);
+    await writable.close();
+    info.lastModified = Date.now();
+  }
+
+  /**
    * クリーンアップ
    */
   cleanup() {
     this.stopWatching();
     this.directoryHandle = null;
     this.fileMap.clear();
+  }
+
+  // ===== 永続化ユーティリティ =====
+  async _openPersistDb() {
+    if (this.persistDb) return this.persistDb;
+    this.persistDb = await openDB(this.persistDbName, 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('kv')) {
+          db.createObjectStore('kv');
+        }
+      }
+    });
+    return this.persistDb;
+  }
+
+  async _persistHandle(key, handle) {
+    const db = await this._openPersistDb();
+    await db.put(this.persistStore, handle, key);
+  }
+
+  async _loadPersisted(key) {
+    const db = await this._openPersistDb();
+    return await db.get(this.persistStore, key);
+  }
+
+  async _verifyRWPermission(handle) {
+    try {
+      const q = await handle.queryPermission({ mode: 'readwrite' });
+      if (q === 'granted') return true;
+      if (q === 'prompt') {
+        const r = await handle.requestPermission({ mode: 'readwrite' });
+        return r === 'granted';
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }
 }
 

@@ -5,11 +5,15 @@
   "version": "0.1.0",
   "scripts": {
     "lint:yaml": "node scripts/validate-story-map.js",
-    "lint:examples": "node scripts/validate-story-map.js examples"
+    "lint:examples": "node scripts/validate-story-map.js examples",
+    "open:palma": "./scripts/open-palma-enhanced.sh",
+    "quick:palma": "./scripts/quick-open-palma.sh",
+    "start": "python3 -m http.server 8080"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
   }
 }
+
 
 

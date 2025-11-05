@@ -1,0 +1,54 @@
+integrated_story_map:
+  meta:
+    created_date: "2025-09-18"
+    project: "ValidatorTest"
+    phase: "Discovery - ストーリーマップ"
+    description: "validator ok"
+    version: "v2"
+    ui_options:
+      hide_priority_2: false
+
+  version_definitions:
+    order: [MVP, Release1]
+
+  story_map_structure:
+    activities:
+      - id: ACT-01
+        name: "テスト活動"
+        description: "説明"
+        users: ["ユーザー"]
+    backbones:
+      - id: BB-01
+        activity_id: ACT-01
+        name: "テストBB"
+        description: "説明"
+        sequence: 1
+
+  personas_stories:
+    P001:
+      name: "ユーザー"
+      role: "role"
+      description: "desc"
+      stories:
+        - id: ST-TEST-001
+          story: "I want 機能を試す, So that バリデーションが通る"
+          backbone_id: BB-01
+          version: "MVP"
+          priority: 1
+          acceptance_criteria: ["OK"]
+
+  display_order:
+    backbones: [BB-01]
+
+  story_mapping:
+    ST-TEST-001: { backbone_id: BB-01, sequence: 1 }
+
+  cross_persona_stories:
+    - id: CST-OK-001
+      story: "I want 共有機能, So that みんな嬉しい"
+      backbone_id: BB-01
+      version: "MVP"
+      priority: 2
+
+
+

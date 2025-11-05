@@ -28,9 +28,20 @@ class FileListView {
     this.fileSelectedCallback = onFileSelected;
     this.fileDeletedCallback = onFileDeleted;
     this.fileEditCallback = onFileEdit;
-
-    this.render();
-    this.loadFiles();
+    // 初期は空表示にする（自動読み込みしない）
+    this.container.innerHTML = `
+      <div class="file-list-header">
+        <div class="file-list-controls">
+          <span class="ds-note">OPENボタンからファイルを選択してください</span>
+        </div>
+      </div>
+      <div class="file-list-content">
+        <div class="file-list-empty">
+          <p>ファイルはまだ表示されていません</p>
+        </div>
+      </div>
+      <div class="file-list-footer"><span class="storage-info"></span></div>
+    `;
   }
 
   /**
@@ -170,9 +181,10 @@ class FileListView {
     const isActive = file.id === this.currentFileId;
     const fileSize = this.formatFileSize(file.size);
     const updatedAt = this.formatDate(file.updatedAt);
-    
+    const isLinked = !!file.localPath;
+
     return `
-      <li class="file-item ${isActive ? 'active' : ''}" data-file-id="${file.id}">
+      <li class="file-item ${isActive ? 'active' : ''} ${isLinked ? 'linked' : ''}" data-file-id="${file.id}">
         <div class="file-item-content">
           <div class="file-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -186,6 +198,7 @@ class FileListView {
               <span class="file-project">${this.escapeHtml(file.projectName)}</span>
               <span class="file-size">${fileSize}</span>
               <span class="file-date">${updatedAt}</span>
+              ${isLinked ? '<span class="file-sync-badge" title="ローカルと連携中">Linked</span>' : ''}
             </div>
           </div>
           <div class="file-actions">

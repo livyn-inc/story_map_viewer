@@ -13,10 +13,12 @@ YAMLのユーザーストーリーマップをブラウザで可視化・編集�
 ## 主な機能
 - アクティビティ/バックボーン/ストーリーの3段グリッド表示（CSS Grid）
 - バージョン（例: MVP/Release1/…）による水平スライスと順序制御（`version_definitions.order`）
-- インライン編集（ペルソナ選択、I want / So that、受け入れ条件、優先度、バージョン）
+- **ステータス表示機能**: ストーリーごとの進捗状況を色分けバッジで表示
+  - TODO（赤）、IN_PROGRESS（黄）、REVIEW（青）、DONE（緑）、CANCELLED（グレー）
+- インライン編集（ペルソナ選択、I want / So that、受け入れ条件、優先度、バージョン、ステータス）
   - ペルソナ変更時は、該当ストーリーが対象ペルソナ配下へ移動
   - 特殊ペルソナ「全ユーザー（CrossPersona）」に移動可能（`cross_persona_stories`へ）
-- YAMLのバリデーション（参照整合・必須キー）
+- YAMLのバリデーション（参照整合・必須キー・ステータス値チェック）
 - 永続化（IndexedDB）
 - エクスポート：PNG / PDF / Markdown / YAML
 - サイドバー開閉、ファイルタブ（一覧/検索/削除/プレビュー/編集）、アップロードタブ（ドラッグ&ドロップ）、
@@ -47,6 +49,7 @@ npm run lint:examples
 - Want/So that はそれぞれ独立入力。保存時に `I want …, So that …` 形式に再構成されます。
 - ペルソナはプルダウン選択。変更するとYAMLの所属が移動します。
 - CrossPersona を選ぶと `cross_persona_stories` セクションへ移動（セクションが無い場合は作成）。
+- **ステータス編集**: プルダウンでTODO/IN_PROGRESS/REVIEW/DONE/CANCELLEDを選択可能。
 
 ### エクスポート
 - PNG / PDF: 画面全体をキャプチャしてファイル出力
@@ -94,6 +97,7 @@ integrated_story_map:
           backbone_id: BB-01
           version: "MVP"
           priority: 1                     # 1-5
+          status: "TODO"                  # TODO, IN_PROGRESS, REVIEW, DONE, CANCELLED
           acceptance_criteria: ["…", "…"]
           ui_screens: ["/path"]
           linked_modules: ["features/…"]
@@ -117,6 +121,7 @@ integrated_story_map:
 - `activities[].id` と `backbones[].activity_id` の対応
 - `stories[].backbone_id` は `backbones[].id` に存在
 - 必須キーの存在（`id`, `name`, `sequence` など）
+- `status` は有効な値（TODO, IN_PROGRESS, REVIEW, DONE, CANCELLED）
 
 ## フォルダ構成
 ```
